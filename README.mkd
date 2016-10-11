@@ -1,0 +1,21 @@
+Chibiml
+====
+
+## About
+
+Chibiml is a toy interpreter/compiler implementation of a tiny ML subset language.
+This software is the result of Software and Computing Science Laboratory (GB26503).
+
+## How to Build
+
+Install [OPAM](https://opam.ocaml.org/) into your system, and run the following commands.
+```
+  opam switch 4.02.2 # require 4.01.0 or later
+  opam install ounit omake
+  opam install menhir # optional
+  omake
+```
+
+## License
+
+Chibisat is released under the [MIT LICENSE](https://raw.githubusercontent.com/linerlock/chibiml/master/LICENSE.txt)
