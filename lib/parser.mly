@@ -139,7 +139,7 @@ exp
     { LetRec ($3, List.rev $4, $6, $8) @@@ $1 }
   | LET REC parameter EQ exp IN exp
     { LetRec ($3, [], $5, $7) @@@ $1 }
-  | IF exp THEN exp ELSE exp COL tpe
+  | IF exp THEN exp ELSE exp
     { If ($2, $4, $6) @@@ $1 }
  | error
      { failwith (Printf.sprintf "parse error near characters %d-%d"
