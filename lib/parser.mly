@@ -178,5 +178,5 @@ parameter:
  | LPAREN VAR COL tpe RPAREN
      { (fst $2, $4) }
  | VAR
-     { (fst $1, Type.gen_ty_var ()) }
+     { (fst $1, Type.gen_tpe_var ()) }
  ;

@@ -63,19 +63,19 @@ let testcase4 = "testcase4" >:: begin fun () ->
 end
 
 let testcase5 = "testcase5" >:: begin fun () ->
-  gen_ty_sym_counter := 0;
+  gen_tpe_sym_counter := 0;
   check (parse_exp "fun x0 -> true") @@ 
     Fun (("x0", TyVar 0 @@@ nowhere), Lit (Bool true @@@ nowhere) @@@ nowhere) @@@ nowhere
 end
 
 let testcase6 = "testcase6" >:: begin fun () ->
-  gen_ty_sym_counter := 0;
+  gen_tpe_sym_counter := 0;
   check (parse_exp "let x0 = true in x0") @@ 
     Let (("x0", TyVar 0 @@@ nowhere), Lit (Bool true @@@ nowhere) @@@ nowhere, Var "x0" @@@ nowhere) @@@ nowhere
 end
 
 let testcase7 = "testcase7" >:: begin fun () ->
-  gen_ty_sym_counter := 0;
+  gen_tpe_sym_counter := 0;
   check (parse_exp "let x0 x1 x2 x3 = true in x0") @@ 
     Let (("x0", TyVar 0 @@@ nowhere),
          Fun (("x1", TyVar 1 @@@ nowhere),
@@ -87,7 +87,7 @@ let testcase7 = "testcase7" >:: begin fun () ->
 end
 
 let testcase8 = "testcase8" >:: begin fun () ->
-  gen_ty_sym_counter := 0;
+  gen_tpe_sym_counter := 0;
   check (parse_exp "let rec f0 x1 x2 x3 = true in x0") @@ 
     LetRec (("f0", TyVar 0 @@@ nowhere),
          [("x1", TyVar 1 @@@ nowhere);

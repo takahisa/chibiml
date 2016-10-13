@@ -32,8 +32,8 @@ type tpe  = tpe' fragment
   | TyUnit
   | TyFun   of tpe * tpe
 
-val gen_ty_sym_counter: int ref
-val gen_ty_sym: unit -> int
-val gen_ty_var: unit -> tpe
+val gen_tpe_sym_counter: int ref
+val gen_tpe_sym: unit -> int
+val gen_tpe_var: unit -> tpe
 
 val show_tpe: tpe -> string

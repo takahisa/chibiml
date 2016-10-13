@@ -32,11 +32,11 @@ type tpe  = tpe' fragment
   | TyUnit
   | TyFun   of tpe * tpe
 
-let gen_ty_sym_counter = ref 0
-let gen_ty_sym = Fresh.f gen_ty_sym_counter
+let gen_tpe_sym_counter = ref 0
+let gen_tpe_sym = Fresh.f gen_tpe_sym_counter
 
-let gen_ty_var () =
-  TyVar (gen_ty_sym ()) @@@ nowhere
+let gen_tpe_var () =
+  TyVar (gen_tpe_sym ()) @@@ nowhere
 
 let rec show_tpe t = 
   match it t with
