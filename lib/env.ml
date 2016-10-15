@@ -34,6 +34,9 @@ let mem key env =
 let extend key value env =
   (key, value) :: env
 
+let append env0 env1 =
+  env0 @ env1
+
 let remove key env =
   List.remove_assoc key env
 

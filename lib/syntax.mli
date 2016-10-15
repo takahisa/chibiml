@@ -53,6 +53,3 @@ type exp  = exp' fragment
     | Bool  of bool
     | Unit
 
-val show_exp: exp -> string
-val show_lit: lit -> string
-

@@ -20,4 +20,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *)
-val f: int ref -> unit -> int
+val f: unit -> int
+
+val reset: unit -> unit

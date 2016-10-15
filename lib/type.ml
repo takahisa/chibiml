@@ -23,32 +23,15 @@
 open Source
 open Source.Position
 
-type var  = int 
+type var  = int
 type tpe  = tpe' fragment
  and tpe' =
-  | TyVar   of var
+  | TyVar     of var
+  | TyFun     of tpe * tpe
   | TyInt
   | TyBool
   | TyUnit
-  | TyFun   of tpe * tpe
 
-let gen_tpe_sym_counter = ref 0
-let gen_tpe_sym = Fresh.f gen_tpe_sym_counter
-
-let gen_tpe_var () =
-  TyVar (gen_tpe_sym ()) @@@ nowhere
-
-let rec show_tpe t = 
-  match it t with
-  | TyVar x0 ->
-     "ty" ^ string_of_int x0
-  | TyInt ->
-     "int"
-  | TyBool ->
-     "bool"
-  | TyUnit ->
-     "unit"
-  | TyFun (t0, t1) ->
-     Printf.sprintf "(%s -> %s)"
-                    (show_tpe t0)
-                    (show_tpe t1)
+let gen_tyvar_sym = Fresh.f
+let gen_tyvar () =
+  TyVar (gen_tyvar_sym ()) @@@ nowhere

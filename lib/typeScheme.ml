@@ -1,5 +1,4 @@
-(*
- * Chibiml
+(* Chibiml
  * Copyright (c) 2015-2016 Takahisa Watanabe <linerlock@outlook.com> All rights reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -20,36 +19,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *)
-open Source
-open Source.Position
-open Type
+type t = TyScheme of Type.var list * Type.tpe
 
-type var = string
-type exp  = exp' fragment
- and exp' =
-   | Var    of var
-   | Lit    of lit
-   | Fun    of (var * tpe) * exp
-   | Let    of (var * tpe) * exp * exp 
-   | LetRec of (var * tpe) * (var * tpe) list * exp * exp
-   | If     of exp * exp * exp
-   | App    of exp * exp
-   | Add    of exp * exp
-   | Sub    of exp * exp
-   | Mul    of exp * exp
-   | Div    of exp * exp
-   | Gt     of exp * exp
-   | Le     of exp * exp
-   | Eq     of exp * exp
-   | Ne     of exp * exp
-   | Not    of exp
-   | Neg    of exp
-
- and tpe  = Type.tpe
- and tpe' = Type.tpe'
-
- and lit  = lit' fragment
- and lit' =
-   | Int   of int
-   | Bool  of bool
-   | Unit
+let of_tpe t = TyScheme ([], t)

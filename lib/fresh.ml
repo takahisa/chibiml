@@ -20,7 +20,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *)
-let f counter () =
+let counter = ref 0
+
+let f () =
   let x0 = !counter in
   incr counter; x0
 
+let reset () =
+  counter := 0

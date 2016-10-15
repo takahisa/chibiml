@@ -114,6 +114,8 @@ rule token = parse
     { INT (int_of_string @@ Lexing.lexeme lexbuf, current_position lexbuf) }
 | ident
     { VAR (Lexing.lexeme lexbuf, current_position lexbuf) }
+| "'" ident
+    { TYPE_VAR (Lexing.lexeme lexbuf, current_position lexbuf) }
 | _
     { failwith (Printf.sprintf "unknown token %s near characters %d-%d"
                                (Lexing.lexeme lexbuf)

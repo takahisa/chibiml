@@ -20,36 +20,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *)
-open Source
-open Source.Position
-open Type
+val pp_exp: Syntax.exp -> string
+val pp_tpe: Syntax.tpe -> string
 
-type var = string
-type exp  = exp' fragment
- and exp' =
-   | Var    of var
-   | Lit    of lit
-   | Fun    of (var * tpe) * exp
-   | Let    of (var * tpe) * exp * exp 
-   | LetRec of (var * tpe) * (var * tpe) list * exp * exp
-   | If     of exp * exp * exp
-   | App    of exp * exp
-   | Add    of exp * exp
-   | Sub    of exp * exp
-   | Mul    of exp * exp
-   | Div    of exp * exp
-   | Gt     of exp * exp
-   | Le     of exp * exp
-   | Eq     of exp * exp
-   | Ne     of exp * exp
-   | Not    of exp
-   | Neg    of exp
-
- and tpe  = Type.tpe
- and tpe' = Type.tpe'
-
- and lit  = lit' fragment
- and lit' =
-   | Int   of int
-   | Bool  of bool
-   | Unit

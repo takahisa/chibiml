@@ -22,18 +22,19 @@
  *)
 type ('key, 'value) t = ('key * 'value) list
 
-val empty : ('key, 'value) t
+val empty: ('key, 'value) t
 
-val singleton : 'key -> 'value -> ('key, 'value) t
+val singleton: 'key -> 'value -> ('key, 'value) t
 
-val mem : 'key -> ('key, 'value) t -> bool
+val extend: 'key -> 'value -> ('key, 'value) t -> ('key, 'value) t
 
-val extend : 'key -> 'value -> ('key, 'value) t -> ('key, 'value) t
+val append: ('key, 'value) t -> ('key, 'value) t -> ('key, 'value) t
 
-val remove : 'key -> ('key, 'value) t -> ('key, 'value) t 
+val remove: 'key -> ('key, 'value) t -> ('key, 'value) t 
 
-val lookup : 'key -> ('key, 'value) t -> 'value
+val mem: 'key -> ('key, 'value) t -> bool
 
-val of_list : ('key * 'value) list -> ('key, 'value) t
+val lookup: 'key -> ('key, 'value) t -> 'value
 
-val to_list : ('key, 'value) t -> ('key * 'value) list
+val of_list: ('key * 'value) list -> ('key, 'value) t
+val to_list: ('key, 'value) t -> ('key * 'value) list

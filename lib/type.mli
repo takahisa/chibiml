@@ -23,17 +23,14 @@
 open Source
 open Source.Position
 
-type var = int
+type var  = int
 type tpe  = tpe' fragment
  and tpe' =
-  | TyVar   of var
+  | TyVar     of var
+  | TyFun     of tpe * tpe
   | TyInt
   | TyBool
   | TyUnit
-  | TyFun   of tpe * tpe
 
-val gen_tpe_sym_counter: int ref
-val gen_tpe_sym: unit -> int
-val gen_tpe_var: unit -> tpe
-
-val show_tpe: tpe -> string
+val gen_tyvar_sym: unit -> int
+val gen_tyvar: unit -> tpe
