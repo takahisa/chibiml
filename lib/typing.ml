@@ -30,7 +30,7 @@ open Source.Position
 let rec subst_tpe th t =
   match t.it with
   | TyVar x0 when List.mem_assoc x0 th ->
-     List.assoc x0 th
+     subst_tpe th @@ List.assoc x0 th
   | TyFun (t00, t01) ->
      let t00' = subst_tpe th t00 in
      let t01' = subst_tpe th t01 in
@@ -127,17 +127,17 @@ let rec f te e =
       | Unit   -> (te, [], TyUnit @@@ nowhere)
     end
   | If (e0, e1, e2) ->
-     let (te0, th0, t0) = f te e0 in
-     let t0' = subst_tpe th0 t0 in
-     let (te1, th1, t1) = f te0 e1 in
-     let (te2, th2, t2) = f te1 e2 in
-     let t3 = Type.gen_tyvar () in
-     let th3 = unify [(t0', TyBool @@@ nowhere); (t1, t3); (t2, t3)] in
-     let th4 = th0 @. th1 @. th2 @. th3 in
-     let t3' = subst_tpe th4 t3 in
-     let te3 = subst_tpe_scheme_env th4 te2 in
-     (te3, th4, t3')
-   | LetRec ((x0, t0), xts0, e0, e1) ->
+    let (te0, th0, t0) = f te e0 in
+    let t0' = subst_tpe th0 t0 in
+    let (te1, th1, t1) = f te0 e1 in
+    let (te2, th2, t2) = f te1 e2 in
+    let t3 = Type.gen_tyvar () in
+    let th3 = unify [(t0', TyBool @@@ nowhere); (t1, t3); (t2, t3)] in
+    let th4 = th0 @. th1 @. th2 @. th3 in
+    let t3' = subst_tpe th4 t3 in
+    let te3 = subst_tpe_scheme_env th4 te2 in
+    (te3, th4, t3')
+  | LetRec ((x0, t0), xts0, e0, e1) ->
      let ts0 = TypeScheme.of_tpe t0 in
      let te0 = Env.extend x0 ts0 te in
      let te1 = List.fold_right begin fun (x, t) -> fun te ->
