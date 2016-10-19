@@ -20,6 +20,86 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *)
-let _ =
-  print_endline "not implemented\n"
+open Sys
+
+exception Quit of int
+
+module type MODE = sig
+  type exp
+  type tpe
+  type value
+  val f: exp -> (exp * tpe * value)
+  val pp_exp: exp -> string
+  val pp_tpe: tpe -> string
+  val pp_value: value -> string
+end
+
+module type MODE_DEFAULT = MODE with type exp = Syntax.exp 
+                                 and type tpe = Syntax.tpe
+
+module Default : MODE_DEFAULT = struct
+  type exp = Syntax.exp
+  type tpe = Syntax.tpe
+  type value = Eval.value
+
+  let f e =
+    let (_, _, t) = Typing.rename_tyvar_tpe Env.empty 0 (Typing.f e) in
+    let v = Eval.f Env.empty (Alpha.f e) in
+    (e, t, v)
+
+  let pp_exp = Pretty.pp_exp
+  let pp_tpe = Pretty.pp_tpe
+  let pp_value = Eval.pp_value
+end
+
+let parse lexbuf =
+  Parser.main Lexer.token lexbuf
+
+let parse_file filepath =
+  let ichannel = open_in filepath in
+  try parse (Lexing.from_channel ichannel) with
+    | e -> close_in ichannel; raise e
+
+let rec repl (module M : MODE_DEFAULT) () =
+  print_string "# ";
+  flush stdout;
+  begin 
+    try
+      let (e0, t0, v0) = M.f (snd @@ parse (Lexing.from_string (read_line ()))) in
+      Printf.printf ">>> %s\n"      (M.pp_exp e0);
+      Printf.printf ": - %s = %s\n" (M.pp_tpe t0) (M.pp_value v0)
+    with
+      | Quit n -> print_newline (); raise (Quit n)
+  end;
+  repl (module M : MODE_DEFAULT) ()
 ;;
+
+let mode: (module MODE_DEFAULT) ref =
+  ref (module Default : MODE_DEFAULT)
+
+let _ =
+  set_signal sigint (Signal_handle (fun n -> raise (Quit n)));
+  set_signal sigusr1 (Signal_handle (fun n -> raise (Quit n)));
+  let filepaths = ref [] in
+  Arg.parse
+    [("--cam", Arg.Unit(fun () -> assert(false)), "\t\tcompiling for CAM")
+    ;("--zam", Arg.Unit(fun () -> assert(false)), "\t\tcompiling for ZAM")
+    ;("--cps", Arg.Unit(fun () -> assert(false)), "\t\tenable CPS-conversion")
+    ;("--backpatch", Arg.Unit begin fun () -> 
+        Config.backpatch_enabled := true
+      end, "\t\tenable backpatch")
+    ]
+    (fun path -> filepaths := !filepaths @ path :: [])
+    ("chibiml Copyright(c) 2014-2016 Takahisa Watanabe\n" ^
+        "  usage: chibiml [<option>] <file0> <file1> ...\n");
+  try
+    let (module M : MODE_DEFAULT) = !mode in
+    if List.length !filepaths = 0 then
+      repl (module M : MODE_DEFAULT) ()
+    else
+      List.iter begin fun path -> 
+        let (e0, t0, v0) = M.f (snd @@ parse_file path) in
+        Printf.printf ": - %s = %s\n" (M.pp_tpe t0) (M.pp_value v0)
+      end !filepaths
+  with
+    Quit n -> exit n;;
