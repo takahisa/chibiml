@@ -84,7 +84,7 @@ let rec f env e k =
   | Add (e0, e1) | Sub (e0, e1) | Mul (e0, e1) | Div (e0, e1) ->
     f env e1 (fun v1 ->
       f env e0 (fun v0 ->
-        match e0.it, v0, v1 with
+        match e.it, v0, v1 with
         | Add (_, _), IntVal n0, IntVal n1 -> k @@ IntVal (n0 + n1)
         | Sub (_, _), IntVal n0, IntVal n1 -> k @@ IntVal (n0 - n1)
         | Mul (_, _), IntVal n0, IntVal n1 -> k @@ IntVal (n0 * n1)
@@ -93,7 +93,7 @@ let rec f env e k =
   | Gt (e0, e1) | Le (e0, e1) ->
     f env e1 (fun v1 ->
       f env e0 (fun v0 ->
-        match e0.it, v0, v1 with
+        match e.it, v0, v1 with
         | Gt (_, _), IntVal n0, IntVal n1 -> k @@ BoolVal (n0 > n1)
         | Le (_, _), IntVal n0, IntVal n1 -> k @@ BoolVal (n0 < n1)
         | _ -> error "invalid argument; integer value expected." e0.at))
