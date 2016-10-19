@@ -24,33 +24,32 @@ open Source
 open Source.Position
 
 type var = int
-
-type t =
-  | Fix    of var * t * t
-  | Let    of var * u * t
-  | Ret    of v
-
- and u =
-   | Val   of v
-   | If    of v * t * t
-   | App   of v * v 
-   | Add   of v * v
-   | Sub   of v * v
-   | Mul   of v * v
-   | Div   of v * v
-   | Eq    of v * v
-   | Ne    of v * v
-   | Gt    of v * v
-   | Le    of v * v
-   | Not   of v
-   | Neg   of v
-
-  and v =
-    | Var  of var
-    | Int  of int
-    | Bool of bool
-    | Unit
-    | Fun  of var * t
+type exp =
+  | LetRec of var * var list * exp * exp
+  | Let    of var * comp * exp
+  | Ret    of term
+(* serious-term; i.e. computations *)
+ and comp =
+   | Term  of term
+   | If    of term * exp * exp
+   | App   of term * term 
+   | Add   of term * term
+   | Sub   of term * term
+   | Mul   of term * term
+   | Div   of term * term
+   | Eq    of term * term
+   | Ne    of term * term
+   | Gt    of term * term
+   | Le    of term * term
+   | Not   of term
+   | Neg   of term
+(* trivial-term; i.e. values *)
+ and term =
+   | Var   of var
+   | Int   of int
+   | Bool  of bool
+   | Unit
+   | Fun   of var * exp
 
 let ret v =
   Ret v
@@ -69,14 +68,13 @@ let rec f e k =
      let y0 = Fresh.f () in
      f e0 (fun v0 ->
        Let (y0, If (v0, f e1 ret, f e2 ret), k (Var y0)))
-  | Alpha.LetRec ((y0, _), [], e0, e1) ->
-     Fix (y0, f e0 ret, f e1 ret)
-  | Alpha.LetRec (yt0, yts0, e0, e1) ->
-     let e0' = List.fold_right (fun yt -> fun e -> Alpha.Fun (yt, e) @@@ nowhere) yts0 e0 in
-     f (Alpha.LetRec (yt0, [], e0', e1) @@@ nowhere) k
+  | Alpha.LetRec ((y0, _), yts0, e0, e1) ->
+     let e0' = f e0 ret in
+     let e1' = f e1 k in
+     LetRec (y0, List.map fst yts0, e0', e1')
   | Alpha.Let ((y0, _), e0, e1) ->
      f e0 (fun v0 ->
-      Let (y0, Val v0, f e1 ret))
+      Let (y0, Term v0, f e1 k))
   | Alpha.Fun ((y0, _), e0) ->
      k @@ Fun (y0, f e0 ret)
   | Alpha.App (e0, e1) ->

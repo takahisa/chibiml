@@ -25,30 +25,33 @@ open Source.Position
 open Alpha
 
 type var = int
-type t =
-  | Fix    of var * t * t
-  | Let    of var * u * t
-  | Ret    of v
- and u =
-   | Val   of v
-   | If    of v * t * t
-   | App   of v * v 
-   | Add   of v * v
-   | Sub   of v * v
-   | Mul   of v * v
-   | Div   of v * v
-   | Eq    of v * v
-   | Ne    of v * v
-   | Gt    of v * v
-   | Le    of v * v
-   | Not   of v
-   | Neg   of v
+type exp =
+  | LetRec of var * var list * exp * exp
+  | Let    of var * comp * exp
+  | Ret    of term
 
-  and v =
-    | Var  of var
-    | Int  of int
-    | Bool of bool
-    | Unit
-    | Fun  of var * t
+(* serious-term; i.e. computations *)
+ and comp =
+   | Term  of term
+   | If    of term * exp * exp
+   | App   of term * term 
+   | Add   of term * term
+   | Sub   of term * term
+   | Mul   of term * term
+   | Div   of term * term
+   | Eq    of term * term
+   | Ne    of term * term
+   | Gt    of term * term
+   | Le    of term * term
+   | Not   of term
+   | Neg   of term
 
-val f: Alpha.exp -> t
+(* trivial-term; i.e. values *)
+ and term =
+   | Var  of var
+   | Int  of int
+   | Bool of bool
+   | Unit
+   | Fun  of var * exp
+
+val f: Alpha.exp -> exp
