@@ -281,8 +281,12 @@ exp_
     { Let ($2, $4, $6) @@@ $1 }
   | LET parameter parameter_list EQ exp_ IN exp_
     { Let ($2, List.fold_right (fun param e -> Fun (param, e) @@@ nowhere) (List.rev $3) $5, $7) @@@ $1 }
+  | LET REC VAR parameter_list COL tpe_ EQ exp_ IN exp_
+    { LetRec ((fst $3, $6), List.rev $4, $8, $10) @@@ $1 }
   | LET REC parameter parameter_list EQ exp_ IN exp_
     { LetRec ($3, List.rev $4, $6, $8) @@@ $1 }
+  | LET REC VAR COL tpe_ EQ exp_ IN exp_
+    { LetRec ((fst $3, $5), [], $7, $9) @@@ $1 }
   | LET REC parameter EQ exp_ IN exp_
     { LetRec ($3, [], $5, $7) @@@ $1 }
   | IF exp_ THEN exp_ ELSE exp_
