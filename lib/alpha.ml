@@ -73,8 +73,9 @@ let rec f env e =
      let yts0 = List.map (fun (_, t) -> Fresh.f (), t) xts0 in
      let y0 = Fresh.f () in
      let env0 = Env.extend x0 y0 env in
-     let env1 = List.fold_left (fun env -> fun ((x, _), (y, _)) -> Env.extend x y env) env0 @@
-       List.combine xts0 yts0 in
+     let env1 = List.fold_right begin fun ((x, _), (y, _)) -> fun env ->
+       Env.extend x y env
+     end (List.combine xts0 yts0) env0 in
      let e0' = f env1 e0 in
      let e1' = f env0 e1 in
      LetRec ((y0, t0), yts0, e0', e1') @@@ e.at

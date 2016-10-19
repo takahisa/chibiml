@@ -72,9 +72,7 @@ let rec f e k =
   | Alpha.LetRec ((y0, _), [], e0, e1) ->
      Fix (y0, f e0 ret, f e1 ret)
   | Alpha.LetRec (yt0, yts0, e0, e1) ->
-     let e0' = List.fold_left begin fun e -> fun yt -> 
-       Alpha.Fun (yt, e) @@@ nowhere
-     end e0 (List.rev yts0) in
+     let e0' = List.fold_right (fun yt -> fun e -> Alpha.Fun (yt, e) @@@ nowhere) yts0 e0 in
      f (Alpha.LetRec (yt0, [], e0', e1) @@@ nowhere) k
   | Alpha.Let ((y0, _), e0, e1) ->
      f e0 (fun v0 ->
