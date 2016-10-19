@@ -33,3 +33,5 @@ type value =
   | UnitVal
 
 val f: (var, value) Env.t -> Alpha.exp -> value
+
+val pp_value: value -> string
