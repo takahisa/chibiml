@@ -137,26 +137,29 @@ let rec f te e =
      let t3' = subst_tpe th4 t3 in
      let te3 = subst_tpe_scheme_env th4 te2 in
      (te3, th4, t3')
-   | LetRec ((x0, t0), (x1, t1) :: params, e0, e1) ->
-      let ts0 = TypeScheme.of_tpe t0 in
-      let ts1 = TypeScheme.of_tpe t1 in
-      let te0 = Env.extend x0 ts0 te in
-      let te1 = Env.extend x0 ts1 te0 in
-      let e0' = List.fold_left (fun e xt -> Fun (xt, e) @@@ nowhere) e0 params in
-      let (te2, th0, t2) = f te1 e0' in
-      let t00 = Type.gen_tyvar () in
-      let t01 = Type.gen_tyvar () in
-      let th1 = unify [(t0, TyFun (t00, t01) @@@ nowhere); (t00, t1)] in
-      let th2 = th0 @. th1 in
-      let t0' = subst_tpe th2 t0 in
-      let te3 = Env.remove x0 (Env.remove x1 (subst_tpe_scheme_env th2 te2)) in
-      let te4 = Env.extend x0 (closure t0' te3) te3 in
-      let (te5, th3, t3) = f te4 e1 in
-      let th4 = th2 @. th3 in
-      let te6 = subst_tpe_scheme_env th4 te5 in
-      let t3' = subst_tpe th4 t3 in
-      (te6, th4, t3')
-   | Let ((x0, t0), e0, e1) | LetRec ((x0, t0), [], e0, e1) ->
+   | LetRec ((x0, t0), xts0, e0, e1) ->
+     let ts0 = TypeScheme.of_tpe t0 in
+     let te0 = Env.extend x0 ts0 te in
+     let te1 = List.fold_right begin fun (x, t) -> fun te ->
+       let ts = TypeScheme.of_tpe t in
+       Env.extend x ts te
+     end xts0 te0 in
+     let (te2, th0, t1) = f te1 e0 in
+     let t2 = List.fold_right begin fun (_, t00) -> fun t01 ->
+        TyFun (t00, t01) @@@ nowhere
+     end xts0 t1 in
+     let th1 = unify [(t0, t2)] in
+     let th2 = th0 @. th1 in
+     let t0' = subst_tpe th2 t0 in
+     let te3 = List.fold_right (fun (x, _) -> fun te -> Env.remove x te) xts0 te2 in
+     let te4 = Env.remove x0 te3 in
+     let te5 = Env.extend x0 (closure t0' te4) (subst_tpe_scheme_env th2 te4) in
+     let (te6, th3, t3) = f te5 e1 in
+     let th4 = th2 @. th3 in
+     let te6 = subst_tpe_scheme_env th4 te5 in
+     let t3' = subst_tpe th4 t3 in
+     (te6, th4, t3')
+   | Let ((x0, t0), e0, e1) ->
       let (te0, th0, t1) = f te e0 in
       let t1' = subst_tpe th0 t1 in
       let th1 = unify [(t0, t1')] in
