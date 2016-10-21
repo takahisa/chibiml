@@ -23,24 +23,23 @@
 type var = int
 
 type exp =
-  | Var    of var
-  | If     of var * exp * exp
   | LetRec of var * var list * var * exp * exp
-  | Let    of var * term * exp
-  | App    of var * var * cont
-  | Add    of var * var * cont
-  | Sub    of var * var * cont
-  | Mul    of var * var * cont
-  | Div    of var * var * cont
-  | Gt     of var * var * cont
-  | Le     of var * var * cont 
-  | Eq     of var * var * cont
-  | Ne     of var * var * cont 
-  | Not    of var * cont
-  | Neg    of var * cont  
-  | Ret    of var * var
+  | If     of term * exp * exp
+  | App    of term * term * cont
+  | Add    of term * term * cont
+  | Sub    of term * term * cont
+  | Mul    of term * term * cont
+  | Div    of term * term * cont
+  | Gt     of term * term * cont
+  | Le     of term * term * cont 
+  | Eq     of term * term * cont
+  | Ne     of term * term * cont 
+  | Not    of term * cont
+  | Neg    of term * cont  
+  | Ret    of var * term
 
 and term =
+  | Var    of var
   | Lit    of lit
   | Fun    of var * var * exp
 
@@ -52,4 +51,4 @@ and lit =
   | Bool   of bool
   | Unit
 
-val f: Alpha.exp -> exp
+val f: Alpha.exp -> cont
