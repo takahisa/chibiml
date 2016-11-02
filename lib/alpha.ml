@@ -81,8 +81,8 @@ let rec f env e =
      LetRec ((y0, t0), yts0, e0', e1') @@@ e.at
   | Syntax.Let ((x0, t0), e0, e1) ->
      let y0 = Fresh.f () in
-     let e0' = f (Env.extend x0 y0 env) e0 in
-     let e1' = f env e1 in
+     let e0' = f env e0 in
+     let e1' = f (Env.extend x0 y0 env) e1 in
      Let ((y0, t0), e0', e1') @@@ e.at
   | Syntax.If (e0, e1, e2) ->
      let e0' = f env e0 in
