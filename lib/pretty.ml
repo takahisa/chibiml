@@ -25,94 +25,105 @@ open Type
 open Source
 open Source.Position
 
-let rec pp_tpe t =
+let rec pp_tpe_var n =
+  if n <= 25 then
+    Printf.sprintf "'%c" (Char.chr (Char.code 'a' + n))
+  else
+    pp_tpe_var (n mod 26) ^ string_of_int (n / 26)
+
+let rec pp_tpe env n t =
   match t.it with
-  | TyVar x0 when x0 <= 25 ->
-     Printf.sprintf "'%c" (Char.chr (Char.code 'a' + x0))
-  | TyVar x0 ->
-     "'ty" ^ string_of_int x0
   | TyInt ->
-     "int"
+     (env, n, "int")
   | TyBool ->
-     "bool"
+     (env, n, "bool")
   | TyUnit ->
-     "unit"
-  | TyFun (t0, t1) ->
-     Printf.sprintf "(%s -> %s)"
-                    (pp_tpe t0)
-                    (pp_tpe t1)
+     (env, n, "unit")
+  | TyVar x0 when Env.mem x0 env ->
+     (env, n, pp_tpe_var (Env.lookup x0 env))
+  | TyVar x0 ->
+     let env0 = Env.extend x0 n env in
+     (env0, n + 1, pp_tpe_var n)
+  | TyFun (t00, t01) ->
+     let (env0, n0, s0) = pp_tpe env n t00 in
+     let (env1, n1, s1) = pp_tpe env0 n0 t01 in
+     (env1, n1, Printf.sprintf "(%s -> %s)" s0 s1)
 
-let rec pp_exp e =
+let rec pp_exp env n e =
   match e.it with
-  | Var x0 -> x0
-  | Lit l0 -> begin
-      match l0.it with
-      | Int n0     -> string_of_int n0
-      | Bool true  -> "true"
-      | Bool false -> "false"
-      | Unit       -> "()"
+  | Var x0 ->
+     (env, n, x0)
+  | Lit v0 -> begin
+     match v0.it with
+     | Int  m0 -> (env, n, string_of_int m0)
+     | Bool b0 -> (env, n, string_of_bool b0)
+     | Unit    -> (env, n, "()")
     end
-  | Fun (xt0, e0) ->
-     Printf.sprintf "(fun %s -> %s)" (pp_parameter xt0) (pp_exp e0)
-  | Let (xt0, e0, e1) ->
-     Printf.sprintf "(let %s = %s in %s)"
-                    (pp_parameter xt0)
-                    (pp_exp e0)
-                    (pp_exp e1)
-  | LetRec (xt0, xts0, e0, e1) ->
-     Printf.sprintf "(let rec %s %s = %s in %s)"
-                    (pp_parameter xt0)
-                    (pp_parameter_list xts0)
-                    (pp_exp e0)
-                    (pp_exp e1)
-  | If (e0, e1, e2) ->
-     Printf.sprintf "(if %s then %s else %s)"
-                    (pp_exp e0)
-                    (pp_exp e1)
-                    (pp_exp e2)
-  | App (e0, e1) ->
-     Printf.sprintf "(%s %s)"
-                    (pp_exp e0)
-                    (pp_exp e1)
-  | Add (e0, e1) ->
-     Printf.sprintf "(%s + %s)"
-                    (pp_exp e0)
-                    (pp_exp e1)
-  | Sub (e0, e1) ->
-     Printf.sprintf "(%s - %s)"
-                    (pp_exp e0)
-                    (pp_exp e1)
-  | Mul (e0, e1) ->
-     Printf.sprintf "(%s * %s)"
-                    (pp_exp e0)
-                    (pp_exp e1)
-  | Div (e0, e1) ->
-     Printf.sprintf "(%s / %s)"
-                    (pp_exp e0)
-                    (pp_exp e1)
-  | Eq (e0, e1) ->
-     Printf.sprintf "(%s = %s)"
-                    (pp_exp e0)
-                    (pp_exp e1)
-  | Ne (e0, e1) ->
-     Printf.sprintf "(%s <> %s)"
-                    (pp_exp e0)
-                    (pp_exp e1)
-  | Gt (e0, e1) ->
-     Printf.sprintf "(%s > %s)"
-                    (pp_exp e0)
-                    (pp_exp e1)
-  | Le (e0, e1) ->
-     Printf.sprintf "(%s < %s)"
-                    (pp_exp e0)
-                    (pp_exp e1)
-  | Neg e0 ->
-     Printf.sprintf "(- %s)" (pp_exp e0)
-  | Not e0 ->
-     Printf.sprintf "(not %s)" (pp_exp e0)
+  | Fun ((x0, t0), e0) ->
+     let (env0, n0, s0) = pp_tpe env n t0 in
+     let (env1, n1, s1) = pp_exp env0 n0 e0 in
+     (env1, n1, Printf.sprintf "(fun (%s : %s) -> %s)" x0 s0 s1)
+  | Let ((x0, t0), e0, e1) ->
+     let (env0, n0, s0) = pp_tpe env n t0 in
+     let (env1, n1, s1) = pp_exp env0 n0 e0 in
+     let (env2, n2, s2) = pp_exp env1 n1 e1 in
+     (env2, n2, Printf.sprintf "let %s : %s = %s in %s" x0 s0 s1 s2)
+  | Syntax.LetRec ((x0, t0), xts0, e0, e1) ->
+     let (env0, n0, s0) = pp_tpe env n t0 in
+     let (env1, n1, s1) = List.fold_right begin fun (x, t) -> fun (env, n, s) ->
+         let (env', n', s') = pp_tpe env n t in
+         (env', n', Printf.sprintf "(%s : %s) %s" x s' s)
+     end xts0 (env0, n0, "") in
+     let (env2, n2, s2) = pp_exp env1 n1 e0 in
+     let (env3, n3, s3) = pp_exp env2 n2 e1 in
+     (env3, n3, Printf.sprintf "let rec %s %s : %s = %s in %s" x0 s1 s0 s2 s3)
+  | Syntax.If (e0, e1, e2) ->
+     let (env0, n0, s0) = pp_exp env n e0 in
+     let (env1, n1, s1) = pp_exp env0 n0 e1 in
+     let (env2, n2, s2) = pp_exp env1 n1 e2 in
+     (env2, n2, Printf.sprintf "(if %s then %s else %s)" s0 s1 s2) 
+  | Syntax.App (e0, e1) ->
+     let (env0, n0, s0) = pp_exp env n e0 in
+     let (env1, n1, s1) = pp_exp env0 n0 e1 in
+     (env1, n1, Printf.sprintf "(%s %s)" s0 s1)
+  | Syntax.Add (e0, e1) ->
+     let (env0, n0, s0) = pp_exp env n e0 in
+     let (env1, n1, s1) = pp_exp env0 n0 e1 in
+     (env1, n1, Printf.sprintf "(%s + %s)" s0 s1)
+  | Syntax.Sub (e0, e1) ->
+     let (env0, n0, s0) = pp_exp env n e0 in
+     let (env1, n1, s1) = pp_exp env0 n0 e1 in
+     (env1, n1, Printf.sprintf "(%s - %s)" s0 s1)
+  | Syntax.Mul (e0, e1) ->
+     let (env0, n0, s0) = pp_exp env n e0 in
+     let (env1, n1, s1) = pp_exp env0 n0 e1 in
+     (env1, n1, Printf.sprintf "(%s * %s)" s0 s1)
+  | Syntax.Div (e0, e1) ->
+     let (env0, n0, s0) = pp_exp env n e0 in
+     let (env1, n1, s1) = pp_exp env0 n0 e1 in
+     (env1, n1, Printf.sprintf "(%s / %s)" s0 s1)
+  | Syntax.Eq (e0, e1) ->
+     let (env0, n0, s0) = pp_exp env n e0 in
+     let (env1, n1, s1) = pp_exp env0 n0 e1 in
+     (env1, n1, Printf.sprintf "(%s = %s)" s0 s1)
+  | Syntax.Ne (e0, e1) ->
+     let (env0, n0, s0) = pp_exp env n e0 in
+     let (env1, n1, s1) = pp_exp env0 n0 e1 in
+     (env1, n1, Printf.sprintf "(%s <> %s)" s0 s1)
+  | Syntax.Gt (e0, e1) ->
+     let (env0, n0, s0) = pp_exp env n e0 in
+     let (env1, n1, s1) = pp_exp env0 n0 e1 in
+     (env1, n1, Printf.sprintf "(%s > %s)" s0 s1)
+  | Syntax.Le (e0, e1) ->
+     let (env0, n0, s0) = pp_exp env n e0 in
+     let (env1, n1, s1) = pp_exp env0 n0 e1 in
+     (env1, n1, Printf.sprintf "(%s < %s)" s0 s1)
+  | Syntax.Neg e0 ->
+     let (env0, n0, s0) = pp_exp env n e0 in
+     (env0, n0, Printf.sprintf "(-%s)" s0)
+  | Syntax.Not e0 ->
+     let (env0, n0, s0) = pp_exp env n e0 in
+     (env0, n0, Printf.sprintf "(not %s)" s0)
 
-and pp_parameter (x0, t0) =
-  Printf.sprintf "(%s : %s)" x0 (pp_tpe t0)
-
-and pp_parameter_list xts =
-  String.concat " " @@ List.map pp_parameter xts
+let pp_tpe t = let (_, _, s) = pp_tpe Env.empty 0 t in s
+let pp_exp e = let (_, _, s) = pp_exp Env.empty 0 e in s

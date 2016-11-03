@@ -43,7 +43,7 @@ module Default : MODE_DEFAULT = struct
   type value = Eval.value
 
   let f e =
-    let (_, _, t) = Typing.rename_tyvar_tpe Env.empty 0 (Typing.f e) in
+    let t = Typing.f e in
     let v = Eval.f Env.empty (Alpha.f e) in
     (e, t, v)
 
@@ -65,8 +65,9 @@ let rec repl (module M : MODE_DEFAULT) () =
   flush stdout;
   begin 
     try
-      let (e0, t0, v0) = M.f (snd @@ parse (Lexing.from_string (read_line ()))) in
-      Printf.printf ">>> %s\n"      (M.pp_exp e0);
+      let line = read_line () in
+      let (e0, t0, v0) = M.f (snd @@ parse (Lexing.from_string line)) in
+      Printf.printf ">>> %s\n"      line;
       Printf.printf ": - %s = %s\n" (M.pp_tpe t0) (M.pp_value v0)
     with
       | Quit n -> print_newline (); raise (Quit n)

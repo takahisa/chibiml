@@ -21,6 +21,3 @@
  * THE SOFTWARE.
  *)
 val f: Syntax.exp -> Syntax.tpe
-
-val rename_tyvar_tpe : (Type.var, int) Env.t -> int -> Syntax.tpe -> ((Type.var, int) Env.t * int * Syntax.tpe)
-val rename_tyvar_exp : (Type.var, int) Env.t -> int -> Syntax.exp -> ((Type.var, int) Env.t * int * Syntax.exp)

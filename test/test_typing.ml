@@ -33,23 +33,10 @@ let parse_exp s =
 let parse_tpe s =
   snd @@ Parser.tpe Lexer.token (Lexing.from_string s)
 
-let rec (<=>) t0 t1 =
-  match t0.it, t1.it with
-  | TyFun (t00, t01), TyFun (t10, t11) ->
-     t00 <=> t10 || t10 <=> t11
-  | TyVar x0, TyVar x1 -> 
-     x0 = x1
-  | TyInt, TyInt -> true
-  | TyBool, TyBool -> true
-  | TyUnit, TyUnit -> true
-  | _ -> false
-let (<=>) t0 t1 =
-  let (_, _, t0') = rename_tyvar_tpe Env.empty 0 t0 in
-  let (_, _, t1') = rename_tyvar_tpe Env.empty 0 t1 in
-  t0' <=> t1'
-
 let check s0 s1 =
-  assert_equal true (Typing.f (parse_exp s0) <=> parse_tpe s1)
+  let t0 = Typing.f (parse_exp s0) in
+  let t1 = parse_tpe s1 in
+  assert_equal true (Pretty.pp_tpe t0 = Pretty.pp_tpe t1)
 
 let testcase0 = "testcase0" >:: begin fun () ->
   check "1 + 2" "int"
