@@ -49,12 +49,12 @@ let rec f env e k =
     f env e0 (fun v0 ->
       f (Env.extend y0 v0 env) e1 k)
   | LetRec ((y0, _), (y1, _) :: yts0, e0, e1) when backpatch () ->
-    let e0' = List.fold_left (fun e -> fun yt -> Fun (yt, e) @@@ nowhere) e0 (List.rev yts0) in
+    let e0' = List.fold_right (fun yt -> fun e -> Fun (yt, e) @@@ nowhere) yts0 e0 in
     let env0_ref = ref Env.empty in
     let env0 = Env.extend y0 (RecFunVal_backpatch (y0, y1, e0', env0_ref)) env in
     env0_ref := env0; f env0 e1 k
   | LetRec ((y0, _), (y1, _) :: yts0, e0, e1) ->
-    let e0' = List.fold_left (fun e -> fun yt -> Fun (yt, e) @@@ nowhere) e0 (List.rev yts0) in
+    let e0' = List.fold_right (fun yt -> fun e -> Fun (yt, e) @@@ nowhere) yts0 e0 in
     let env0 = Env.extend y0 (RecFunVal (y0, y1, e0', env)) env in
     f env0 e1 k
   | If (e0, e1, e2) ->
