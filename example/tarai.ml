@@ -1,4 +1,4 @@
-let rec tarai (x : int) = fun (y : int) -> fun (z : int) ->
+let rec tarai (x : int) (y : int) (z : int) =
   if x < y then
     y
   else if x = y then

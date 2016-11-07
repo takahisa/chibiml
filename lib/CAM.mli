@@ -22,40 +22,37 @@
  *)
 open Source
 open Source.Position
-open Alpha
 
-type var = int
-type exp =
-  | LetRec of var * var list * exp * exp
-  | Let    of var * comp * exp
-  | Ret    of term
+open Source
+open Source.Position
 
-(* serious-term; i.e. computations *)
- and comp =
-   | Term  of term
-   | If    of term * exp * exp
-   | App   of term * term 
-   | Add   of term * term
-   | Sub   of term * term
-   | Mul   of term * term
-   | Div   of term * term
-   | Eq    of term * term
-   | Ne    of term * term
-   | Gt    of term * term
-   | Le    of term * term
-   | Not   of term
-   | Neg   of term
+type instruction =
+  | CAM_Ldi        of int
+  | CAM_Ldb        of bool
+  | CAM_Closure    of instruction list
+  | CAM_Acc        of int
+  | CAM_App
+  | CAM_Ret
+  | CAM_Let
+  | CAM_End
+  | CAM_Test       of instruction list * instruction list
+  | CAM_Add
+  | CAM_Sub
+  | CAM_Mul
+  | CAM_Div
+  | CAM_Eq
+  | CAM_Gt
+  | CAM_Le
+  | CAM_Neg
+  | CAM_Not
 
-(* trivial-term; i.e. values *)
- and term =
-   | Var  of var
-   | Int  of int
-   | Bool of bool
-   | Unit
-   | Fun  of var * exp
+type value =
+  | CAM_IntVal     of int
+  | CAM_BoolVal    of bool
+  | CAM_ClosureVal of instruction list * value list
 
-val f: Alpha.exp -> exp
+val f: Mnf.exp -> instruction list
 
-val pp_exp: exp -> string
-val pp_comp: comp -> string
-val pp_term: term -> string
+val eval: instruction list -> value
+
+val pp_value: value -> string

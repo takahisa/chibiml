@@ -20,36 +20,45 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *)
+open Config
 open Source
 open Source.Position
 
 type var = int
 type exp =
-  | LetRec of var * var list * exp * exp
-  | Let    of var * comp * exp
-  | Ret    of term
+  | LetRec               of var * var list * exp * exp
+  | Let                  of var * comp * exp
+  | Ret                  of term
 (* serious-term; i.e. computations *)
  and comp =
-   | Term  of term
-   | If    of term * exp * exp
-   | App   of term * term 
-   | Add   of term * term
-   | Sub   of term * term
-   | Mul   of term * term
-   | Div   of term * term
-   | Eq    of term * term
-   | Ne    of term * term
-   | Gt    of term * term
-   | Le    of term * term
-   | Not   of term
-   | Neg   of term
+   | Term                of term
+   | If                  of term * exp * exp
+   | App                 of term * term 
+   | Add                 of term * term
+   | Sub                 of term * term
+   | Mul                 of term * term
+   | Div                 of term * term
+   | Eq                  of term * term
+   | Ne                  of term * term
+   | Gt                  of term * term
+   | Le                  of term * term
+   | Not                 of term
+   | Neg                 of term
 (* trivial-term; i.e. values *)
  and term =
-   | Var   of var
-   | Int   of int
-   | Bool  of bool
+   | Var                 of var
+   | Int                 of int
+   | Bool                of bool
    | Unit
-   | Fun   of var * exp
+   | Fun                 of var * exp
+
+type value =
+   | RecFunVal           of var * var * exp * (var, value) Env.t
+   | RecFunVal_backpatch of var * var * exp * (var, value) Env.t ref
+   | FunVal              of var * exp * (var, value) Env.t
+   | IntVal              of int
+   | BoolVal             of bool
+   | UnitVal
 
 let ret v =
   Ret v
@@ -131,3 +140,63 @@ let rec f e k =
      f e0 (fun v0 ->
         Let (y0, Neg v0, k (Var y0)))
 let f e = f e ret
+    
+let rec pp_exp = function
+  | LetRec (x0, xs0, e0, e1) ->
+    Printf.sprintf "let rec _%d %s = %s in %s" 
+      x0 (String.concat " " (List.map (Printf.sprintf "_%d") xs0)) (pp_exp e0) (pp_exp e1)
+  | Let (x0, c0, e1) ->
+    Printf.sprintf "let _%d = %s in %s" x0 (pp_comp c0) (pp_exp e1)
+  | Ret v0 ->
+    pp_term v0
+
+and pp_comp = function
+  | Term v0 ->
+    pp_term v0
+  | If (v0, e0, e1) ->
+    Printf.sprintf "(if %s then %s else %s)" (pp_term v0) (pp_exp e0) (pp_exp e1)
+  | App (v0, v1) ->
+    Printf.sprintf "(%s %s)" (pp_term v0) (pp_term v1)
+  | Add (v0, v1) ->
+    Printf.sprintf "(%s + %s)" (pp_term v0) (pp_term v1)
+  | Sub (v0, v1) ->
+    Printf.sprintf "(%s - %s)" (pp_term v0) (pp_term v1)
+  | Mul (v0, v1) ->
+    Printf.sprintf "(%s * %s)" (pp_term v0) (pp_term v1)
+  | Div (v0, v1) ->
+    Printf.sprintf "(%s / %s)" (pp_term v0) (pp_term v1)
+  | Eq (v0, v1) ->
+    Printf.sprintf "(%s = %s)" (pp_term v0) (pp_term v1)
+  | Ne (v0, v1) ->
+    Printf.sprintf "(%s <> %s)" (pp_term v0) (pp_term v1)
+  | Gt (v0, v1) ->
+    Printf.sprintf "(%s > %s)" (pp_term v0) (pp_term v1)
+  | Le (v0, v1) ->
+    Printf.sprintf "(%s < %s)" (pp_term v0) (pp_term v1)
+  | Not v0 ->
+    Printf.sprintf "(not %s)" (pp_term v0)
+  | Neg v0 ->
+    Printf.sprintf "(- %s)" (pp_term v0)
+
+and pp_term = function
+  | Var x0 -> 
+    Printf.sprintf "_%d" x0
+  | Int n0 -> 
+    string_of_int n0
+  | Bool b0 -> 
+    string_of_bool b0
+  | Unit    -> 
+    "()"
+  | Fun (x0, e0) ->
+    Printf.sprintf "(fun _%d -> %s)" x0 (pp_exp e0)
+
+let rec pp_value = function
+  | RecFunVal (_, _, _, _) | RecFunVal_backpatch (_, _, _, _) | FunVal (_, _, _) ->
+    "<fun>"
+  | IntVal n0 ->
+    string_of_int n0
+  | BoolVal b0 ->
+    string_of_bool b0
+  | UnitVal ->
+    "()"
+

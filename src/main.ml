@@ -25,8 +25,8 @@ open Sys
 exception Quit of int
 
 module type MODE = sig
-  type exp
-  type tpe
+  type exp = Syntax.exp
+  type tpe = Syntax.tpe
   type value
   val f: exp -> (exp * tpe * value)
   val pp_exp: exp -> string
@@ -34,10 +34,7 @@ module type MODE = sig
   val pp_value: value -> string
 end
 
-module type MODE_DEFAULT = MODE with type exp = Syntax.exp 
-                                 and type tpe = Syntax.tpe
-
-module Default : MODE_DEFAULT = struct
+module Default = struct
   type exp = Syntax.exp
   type tpe = Syntax.tpe
   type value = Eval.value
@@ -52,6 +49,22 @@ module Default : MODE_DEFAULT = struct
   let pp_value = Eval.pp_value
 end
 
+module Cam = struct
+  type exp = Syntax.exp
+  type tpe = Syntax.tpe
+  type value = CAM.value
+
+  let f e =
+    let t = Typing.f e in
+    let v = CAM.eval (CAM.f (Mnf.f (Alpha.f e))) in
+    (e, t, v)
+
+  let pp_exp = Pretty.pp_exp
+  let pp_tpe = Pretty.pp_tpe
+  let pp_value = CAM.pp_value
+end
+
+
 let parse lexbuf =
   Parser.main Lexer.token lexbuf
 
@@ -60,7 +73,7 @@ let parse_file filepath =
   try parse (Lexing.from_channel ichannel) with
     | e -> close_in ichannel; raise e
 
-let rec repl (module M : MODE_DEFAULT) () =
+let rec repl (module M : MODE) () =
   print_string "# ";
   flush stdout;
   begin 
@@ -72,18 +85,18 @@ let rec repl (module M : MODE_DEFAULT) () =
     with
       | Quit n -> print_newline (); raise (Quit n)
   end;
-  repl (module M : MODE_DEFAULT) ()
+  repl (module M : MODE) ()
 ;;
 
-let mode: (module MODE_DEFAULT) ref =
-  ref (module Default : MODE_DEFAULT)
+let mode: (module MODE) ref =
+  ref (module Default : MODE)
 
 let _ =
   set_signal sigint (Signal_handle (fun n -> raise (Quit n)));
   set_signal sigusr1 (Signal_handle (fun n -> raise (Quit n)));
   let filepaths = ref [] in
   Arg.parse
-    [("--cam", Arg.Unit(fun () -> assert(false)), "\t\tcompiling for CAM")
+    [("--cam", Arg.Unit(fun () -> mode := (module Cam : MODE)), "\t\tcompiling for CAM")
     ;("--zam", Arg.Unit(fun () -> assert(false)), "\t\tcompiling for ZAM")
     ;("--cps", Arg.Unit(fun () -> assert(false)), "\t\tenable CPS-conversion")
     ;("--backpatch", Arg.Unit begin fun () -> 
@@ -94,9 +107,9 @@ let _ =
     ("chibiml Copyright(c) 2014-2016 Takahisa Watanabe\n" ^
         "  usage: chibiml [<option>] <file0> <file1> ...\n");
   try
-    let (module M : MODE_DEFAULT) = !mode in
+    let (module M : MODE) = !mode in
     if List.length !filepaths = 0 then
-      repl (module M : MODE_DEFAULT) ()
+      repl (module M : MODE) ()
     else
       List.iter begin fun path -> 
         let (e0, t0, v0) = M.f (snd @@ parse_file path) in
