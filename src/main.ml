@@ -49,7 +49,7 @@ module Default = struct
   let pp_value = Eval.pp_value
 end
 
-module Cam = struct
+module CAM_Mode = struct
   type exp = Syntax.exp
   type tpe = Syntax.tpe
   type value = CAM.value
@@ -80,7 +80,7 @@ let rec repl (module M : MODE) () =
     try
       let line = read_line () in
       let (e0, t0, v0) = M.f (snd @@ parse (Lexing.from_string line)) in
-      Printf.printf ">>> %s\n"      line;
+      Printf.printf ">>> %s\n"      (M.pp_exp e0);
       Printf.printf ": - %s = %s\n" (M.pp_tpe t0) (M.pp_value v0)
     with
       | Quit n -> print_newline (); raise (Quit n)
@@ -96,7 +96,7 @@ let _ =
   set_signal sigusr1 (Signal_handle (fun n -> raise (Quit n)));
   let filepaths = ref [] in
   Arg.parse
-    [("--cam", Arg.Unit(fun () -> mode := (module Cam : MODE)), "\t\tcompiling for CAM")
+    [("--cam", Arg.Unit(fun () -> mode := (module CAM_Mode : MODE)), "\t\tcompiling for CAM")
     ;("--zam", Arg.Unit(fun () -> assert(false)), "\t\tcompiling for ZAM")
     ;("--cps", Arg.Unit(fun () -> assert(false)), "\t\tenable CPS-conversion")
     ;("--backpatch", Arg.Unit begin fun () -> 
