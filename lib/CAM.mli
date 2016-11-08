@@ -51,9 +51,8 @@ type value =
   | CAM_BoolVal    of bool
   | CAM_ClosureVal of instruction list * value list
 
-val f: Mnf.exp -> instruction list
-
-val eval: instruction list -> value
+val compile: Mnf.exp -> instruction list
+val run: instruction list -> value
 
 val pp_instruction: instruction -> string
 val pp_value: value -> string
