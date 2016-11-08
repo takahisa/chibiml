@@ -55,4 +55,5 @@ val f: Mnf.exp -> instruction list
 
 val eval: instruction list -> value
 
+val pp_instruction: instruction -> string
 val pp_value: value -> string
