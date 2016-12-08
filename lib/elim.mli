@@ -20,39 +20,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *)
-open Source
-open Source.Position
+type var  = int
+type exp =
+  | Var    of var
+  | Int    of int
+  | Bool   of bool
+  | Unit
+  | Fun    of var * exp
+  | Let    of var * exp * exp 
+  | LetRec of var * var list * exp * exp
+  | If     of exp * exp * exp
+  | App    of exp * exp
+  | Add    of exp * exp
+  | Sub    of exp * exp
+  | Mul    of exp * exp
+  | Div    of exp * exp
+  | Gt     of exp * exp
+  | Le     of exp * exp
+  | Eq     of exp * exp
+  | Ne     of exp * exp
+  | Not    of exp
+  | Neg    of exp
 
-open Source
-open Source.Position
+val f: Mnf.exp -> exp
 
-type instruction =
-  | CAM_Ldi        of int
-  | CAM_Ldb        of bool
-  | CAM_Closure    of instruction list
-  | CAM_Acc        of int
-  | CAM_App
-  | CAM_Ret
-  | CAM_Let
-  | CAM_End
-  | CAM_Test       of instruction list * instruction list
-  | CAM_Add
-  | CAM_Sub
-  | CAM_Mul
-  | CAM_Div
-  | CAM_Eq
-  | CAM_Gt
-  | CAM_Le
-  | CAM_Neg
-  | CAM_Not
-
-type value =
-  | CAM_IntVal     of int
-  | CAM_BoolVal    of bool
-  | CAM_ClosureVal of instruction list * value list
-
-val compile: Elim.exp -> instruction list
-val run: instruction list -> value
-
-val pp_instruction: instruction -> string
-val pp_value: value -> string

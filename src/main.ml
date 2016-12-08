@@ -56,7 +56,7 @@ module CAM_Mode = struct
 
   let f e =
     let t = Typing.f e in
-    let v = CAM.run (CAM.compile (Mnf.f (Alpha.f e))) in
+    let v = CAM.run (CAM.compile (Elim.f (Mnf.f (Alpha.f e)))) in
     (e, t, v)
 
   let pp_exp = Pretty.pp_exp

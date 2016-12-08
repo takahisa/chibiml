@@ -78,61 +78,50 @@ let rec address env x =
   | []        -> error "no matching variable in environment." nowhere
   | y :: env' -> if (x = y) then 0 else 1 + address env' x
 
-let compile e =
-  let rec f env = function
-    | Mnf.LetRec (x0, x1 :: xs0, e0, e1) ->
-       let e0' = List.fold_right (fun x -> fun e -> Mnf.Ret (Mnf.Fun (x, e))) xs0 e0 in
-       let env0 = x0 :: env in
-       let env1 = x1 :: env0 in
-       [CAM_Closure ((f env1 e0') @ [CAM_Ret])] @ [CAM_Let] @ (f env0 e1) @ [CAM_End]
-    | Mnf.LetRec (x0, [], e0, e1) ->
-       (f env e0) @ [CAM_Let] @ (f (x0 :: env) e1) @ [CAM_End]
-    | Mnf.Let (x0, c0, e0) ->
-       (g env c0) @ [CAM_Let] @ (f (x0 :: env) e0) @ [CAM_End]
-    | Mnf.Ret v0 ->
-       (h env v0)
-  and g env = function
-    | Mnf.Term v0 ->
-       (h env v0)
-    | Mnf.If (v0, e0, e1) ->
-       (h env v0) @ [CAM_Test ((f env e0), (f env e1))]
-    | Mnf.App (v0, v1) ->
-       (h env v1) @ (h env v0) @ [CAM_App]
-    | Mnf.Add (v0, v1) ->
-       (h env v1) @ (h env v0) @ [CAM_Add]
-    | Mnf.Sub (v0, v1) ->
-       (h env v1) @ (h env v0) @ [CAM_Sub]
-    | Mnf.Mul (v0, v1) ->
-       (h env v1) @ (h env v0) @ [CAM_Mul]
-    | Mnf.Div (v0, v1) ->
-       (h env v1) @ (h env v0) @ [CAM_Div]
-    | Mnf.Eq (v0, v1) ->
-       (h env v1) @ (h env v0) @ [CAM_Eq]
-    | Mnf.Ne (v0, v1) ->
-       (h env v1) @ (h env v0) @ [CAM_Eq; CAM_Not]
-    | Mnf.Gt (v0, v1) ->
-       (h env v1) @ (h env v0) @ [CAM_Gt]
-    | Mnf.Le (v0, v1) ->
-       (h env v1) @ (h env v0) @ [CAM_Le]
-    | Mnf.Not v0 ->
-       (h env v0) @ [CAM_Not]
-    | Mnf.Neg v0 ->
-       (h env v0) @ [CAM_Neg]
-                      
-  and h env = function
-    | Mnf.Var x0 ->
-       [CAM_Acc (address env x0)]
-    | Mnf.Int n0 ->
-       [CAM_Ldi n0]
-    | Mnf.Bool b0 ->
-       [CAM_Ldb b0]
-    | Mnf.Unit ->
-       [CAM_Ldi 0]
-    | Mnf.Fun (x0, e0) ->
-       [CAM_Closure (f (x0 :: Fresh.f () :: env) e0 @ [CAM_Ret])]
-  in
-    f [] e
-
+let rec compile env = function
+  | Elim.Var x0 ->
+     [CAM_Acc (address env x0)]
+  | Elim.Int n0 -> 
+     [CAM_Ldi n0]
+  | Elim.Bool b0 ->
+     [CAM_Ldb b0]
+  | Elim.Unit -> 
+     [CAM_Ldi 0]
+  | Elim.Fun (x0, e0) ->
+     [CAM_Closure (compile (x0 :: Fresh.f () :: env) e0 @ [CAM_Ret])]
+  | Elim.LetRec (x0, x1 :: xs0, e0, e1) ->
+     let e0' = List.fold_right (fun x -> fun e -> Elim.Fun (x, e)) xs0 e0 in
+     let env0 = x0 :: env in
+     let env1 = x1 :: env0 in
+     [CAM_Closure ((compile env1 e0') @ [CAM_Ret])] @ [CAM_Let] @ (compile env0 e1) @ [CAM_End]
+  | Elim.LetRec (x0, [], e0, e1) | Elim.Let (x0, e0, e1) ->
+     (compile env e0) @ [CAM_Let] @ (compile (x0 :: env) e1) @ [CAM_End]
+  | Elim.If (e0, e1, e2) ->
+     (compile env e0) @ [CAM_Test ((compile env e1), (compile env e2))]
+  | Elim.App (e0, v1) ->
+     (compile env v1) @ (compile env e0) @ [CAM_App]
+  | Elim.Add (e0, v1) ->
+     (compile env v1) @ (compile env e0) @ [CAM_Add]
+  | Elim.Sub (e0, v1) ->
+     (compile env v1) @ (compile env e0) @ [CAM_Sub]
+  | Elim.Mul (e0, v1) ->
+     (compile env v1) @ (compile env e0) @ [CAM_Mul]
+  | Elim.Div (e0, v1) ->
+     (compile env v1) @ (compile env e0) @ [CAM_Div]
+  | Elim.Eq (e0, v1) ->
+     (compile env v1) @ (compile env e0) @ [CAM_Eq]
+  | Elim.Ne (e0, v1) ->
+     (compile env v1) @ (compile env e0) @ [CAM_Eq; CAM_Not]
+  | Elim.Gt (e0, v1) ->
+     (compile env v1) @ (compile env e0) @ [CAM_Gt]
+  | Elim.Le (e0, v1) ->
+     (compile env v1) @ (compile env e0) @ [CAM_Le]
+  | Elim.Not e0 ->
+     (compile env e0) @ [CAM_Not]
+  | Elim.Neg e0 ->
+     (compile env e0) @ [CAM_Neg]
+let compile e = compile [] e
+                          
 let rec run = function
   | CAM_Ldi(n0) :: c0, e0, s0 ->
     let s1 = CAM_IntVal n0 :: s0 in
