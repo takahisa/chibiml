@@ -24,46 +24,64 @@ open Sys
 
 exception Quit of int
 
-module type MODE = sig
-  type exp = Syntax.exp
-  type tpe = Syntax.tpe
-  type value
-  val f: exp -> (exp * tpe * value)
-  val pp_exp: exp -> string
-  val pp_tpe: tpe -> string
-  val pp_value: value -> string
-end
+module type MODE = 
+  sig
+    type exp = Syntax.exp
+    type tpe = Syntax.tpe
+    type value
+    val f: exp -> (exp * tpe * value)
+    val pp_exp: exp -> string
+    val pp_tpe: tpe -> string
+    val pp_value: value -> string
+  end
 
-module Default = struct
-  type exp = Syntax.exp
-  type tpe = Syntax.tpe
-  type value = Eval.value
+module Default = 
+  struct
+    type exp = Syntax.exp
+    type tpe = Syntax.tpe
+    type value = Eval.value
+                   
+    let f e =
+      let t = Typing.f e in
+      let v = Eval.f Env.empty (Alpha.f e) in
+      (e, t, v)
+        
+    let pp_exp = Pretty.pp_exp
+    let pp_tpe = Pretty.pp_tpe
+    let pp_value = Eval.pp_value
+  end
 
-  let f e =
-    let t = Typing.f e in
-    let v = Eval.f Env.empty (Alpha.f e) in
-    (e, t, v)
+module CAM_Mode = 
+  struct
+    type exp = Syntax.exp
+    type tpe = Syntax.tpe
+    type value = CAM.value
+                   
+    let f e =
+      let t = Typing.f e in
+      let v = CAM.run (CAM.compile (Elim.f (Mnf.f (Alpha.f e)))) in
+      (e, t, v)
+        
+    let pp_exp = Pretty.pp_exp
+    let pp_tpe = Pretty.pp_tpe
+    let pp_value = CAM.pp_value
+  end
 
-  let pp_exp = Pretty.pp_exp
-  let pp_tpe = Pretty.pp_tpe
-  let pp_value = Eval.pp_value
-end
+module ZAM_Mode =
+  struct
+    type exp = Syntax.exp
+    type tpe = Syntax.tpe
+    type value = ZAM.value
 
-module CAM_Mode = struct
-  type exp = Syntax.exp
-  type tpe = Syntax.tpe
-  type value = CAM.value
+    let f e =
+      let t = Typing.f e in
+      let v = ZAM.run (ZAM.compile (Elim.f (Mnf.f (Alpha.f e)))) in
+      (e, t, v)
 
-  let f e =
-    let t = Typing.f e in
-    let v = CAM.run (CAM.compile (Elim.f (Mnf.f (Alpha.f e)))) in
-    (e, t, v)
-
-  let pp_exp = Pretty.pp_exp
-  let pp_tpe = Pretty.pp_tpe
-  let pp_value = CAM.pp_value
-end
-
+    let pp_exp = Pretty.pp_exp
+    let pp_tpe = Pretty.pp_tpe
+    let pp_value = ZAM.pp_value
+  end
 
 let parse lexbuf =
   Parser.main Lexer.token lexbuf
@@ -96,9 +114,9 @@ let _ =
   set_signal sigusr1 (Signal_handle (fun n -> raise (Quit n)));
   let filepaths = ref [] in
   Arg.parse
-    [("--cam", Arg.Unit(fun () -> mode := (module CAM_Mode : MODE)), "\t\tcompiling for CAM")
-    ;("--zam", Arg.Unit(fun () -> assert(false)), "\t\tcompiling for ZAM")
-    ;("--cps", Arg.Unit(fun () -> assert(false)), "\t\tenable CPS-conversion")
+    [("--cam", Arg.Unit (fun () -> mode := (module CAM_Mode : MODE)), "\t\tcompiling for CAM")
+    ;("--zam", Arg.Unit (fun () -> mode := (module ZAM_Mode : MODE)), "\t\tcompiling for ZAM")
+    ;("--cps", Arg.Unit (fun () -> assert(false)), "\t\tenable CPS-conversion")
     ;("--backpatch", Arg.Unit begin fun () -> 
         Config.backpatch_enabled := true
       end, "\t\tenable backpatch")

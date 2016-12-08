@@ -20,33 +20,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *)
-open Source
-open Source.Position
-
 type instruction =
-  | CAM_Ldi        of int
-  | CAM_Ldb        of bool
-  | CAM_Closure    of instruction list
-  | CAM_Acc        of int
-  | CAM_App
-  | CAM_Ret
-  | CAM_Let
-  | CAM_End
-  | CAM_Test       of instruction list * instruction list
-  | CAM_Add
-  | CAM_Sub
-  | CAM_Mul
-  | CAM_Div
-  | CAM_Eq
-  | CAM_Gt
-  | CAM_Le
-  | CAM_Neg
-  | CAM_Not
+  | ZAM_Ldi        of int
+  | ZAM_Ldb        of bool
+  | ZAM_Closure    of instruction list
+  | ZAM_Acc        of int
+  | ZAM_App
+  | ZAM_TailApp
+  | ZAM_Mark
+  | ZAM_Grab
+  | ZAM_Ret
+  | ZAM_Let
+  | ZAM_End
+  | ZAM_Test       of instruction list * instruction list
+  | ZAM_Add
+  | ZAM_Sub
+  | ZAM_Mul
+  | ZAM_Div
+  | ZAM_Eq
+  | ZAM_Gt
+  | ZAM_Le
+  | ZAM_Neg
+  | ZAM_Not
 
 type value =
-  | CAM_IntVal     of int
-  | CAM_BoolVal    of bool
-  | CAM_ClosureVal of instruction list * value list
+  | ZAM_IntVal     of int
+  | ZAM_BoolVal    of bool
+  | ZAM_ClosureVal of instruction list * value list
+  | ZAM_Epsilon
 
 val compile: Elim.exp -> instruction list
 val run: instruction list -> value
