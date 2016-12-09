@@ -98,7 +98,6 @@ let rec repl (module M : MODE) () =
     try
       let line = read_line () in
       let (e0, t0, v0) = M.f (snd @@ parse (Lexing.from_string line)) in
-      Printf.printf ">>> %s\n"      (M.pp_exp e0);
       Printf.printf ": - %s = %s\n" (M.pp_tpe t0) (M.pp_value v0)
     with
       | Quit n -> print_newline (); raise (Quit n)
