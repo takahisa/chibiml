@@ -56,136 +56,136 @@ and lit =
 
 let rec f env e (k: var) =
   match e.it with
-  | Alpha.Var y0 when Env.mem y0 env ->
-    Ret (k, Env.lookup y0 env)
-  | Alpha.Var y0 -> 
-    Ret (k, Var y0)
+  | Alpha.Var x0 when Env.mem x0 env ->
+    Ret (k, Env.lookup x0 env)
+  | Alpha.Var x0 -> 
+    Ret (k, Var x0)
   | Alpha.Lit l0 -> begin
     match l0.it with
     | Alpha.Int  n0 -> Ret (k, Lit (Int n0))
     | Alpha.Bool b0 -> Ret (k, Lit (Bool b0))
     | Alpha.Unit    -> Ret (k, Lit (Unit))
     end
-  | Alpha.Fun ((y0, _), e0) ->
-    let y1 = Fresh.f () in
-    Ret (k, Fun (y0, y1, f env e0 y1))
-  | Alpha.LetRec ((y0, _), yts0, e0, e1) ->
-    let y1 = Fresh.f () in
-    LetRec (y0, List.map fst yts0, y1, f env e0 y1, f env e1 k)
-  | Alpha.Let ((y0, _), e0, e1) ->
+  | Alpha.Fun ((x0, _), e0) ->
+    let x1 = Fresh.f () in
+    Ret (k, Fun (x0, x1, f env e0 x1))
+  | Alpha.LetRec ((x0, _), xts0, e0, e1) ->
+    let x1 = Fresh.f () in
+    LetRec (x0, List.map fst xts0, x1, f env e0 x1, f env e1 k)
+  | Alpha.Let ((x0, _), e0, e1) ->
     g env e0 (fun v0 ->
-      f (Env.extend y0 v0 env) e1 k)
+      f (Env.extend x0 v0 env) e1 k)
   | Alpha.If (e0, e1, e2) ->
     g env e0 (fun v0 ->
       If (v0, f env e1 k, f env e2 k))
   | Alpha.App (e0, e1) ->
     g env e0 (fun v0 ->
       g env e1 (fun v1 ->
-        let y0 = Fresh.f () in App (v0, v1, Cont (y0, Ret (k, Var y0)))))
+        let x0 = Fresh.f () in App (v0, v1, Cont (x0, Ret (k, Var x0)))))
   | Alpha.Add (e0, e1) ->
     g env e0 (fun v0 ->
       g env e1 (fun v1 ->
-        let y0 = Fresh.f () in Add (v0, v1, Cont (y0, Ret (k, Var y0)))))
+        let x0 = Fresh.f () in Add (v0, v1, Cont (x0, Ret (k, Var x0)))))
   | Alpha.Sub (e0, e1) ->
     g env e0 (fun v0 ->
       g env e1 (fun v1 ->
-        let y0 = Fresh.f () in Sub (v0, v1, Cont (y0, Ret (k, Var y0)))))
+        let x0 = Fresh.f () in Sub (v0, v1, Cont (x0, Ret (k, Var x0)))))
   | Alpha.Mul (e0, e1) ->
     g env e0 (fun v0 ->
       g env e1 (fun v1 ->
-        let y0 = Fresh.f () in Mul (v0, v1, Cont (y0, Ret (k, Var y0)))))
+        let x0 = Fresh.f () in Mul (v0, v1, Cont (x0, Ret (k, Var x0)))))
   | Alpha.Div (e0, e1) ->
     g env e0 (fun v0 ->
       g env e1 (fun v1 ->
-        let y0 = Fresh.f () in Div (v0, v1, Cont (y0, Ret (k, Var y0)))))
+        let x0 = Fresh.f () in Div (v0, v1, Cont (x0, Ret (k, Var x0)))))
   | Alpha.Gt (e0, e1) ->
     g env e0 (fun v0 ->
       g env e1 (fun v1 ->
-        let y0 = Fresh.f () in Gt (v0, v1, Cont (y0, Ret (k, Var y0)))))
+        let x0 = Fresh.f () in Gt (v0, v1, Cont (x0, Ret (k, Var x0)))))
   | Alpha.Le (e0, e1) ->
     g env e0 (fun v0 ->
       g env e1 (fun v1 ->
-        let y0 = Fresh.f () in Le (v0, v1, Cont (y0, Ret (k, Var y0)))))
+        let x0 = Fresh.f () in Le (v0, v1, Cont (x0, Ret (k, Var x0)))))
   | Alpha.Eq (e0, e1) ->
     g env e0 (fun v0 ->
       g env e1 (fun v1 ->
-        let y0 = Fresh.f () in Eq (v0, v1, Cont (y0, Ret (k, Var y0)))))
+        let x0 = Fresh.f () in Eq (v0, v1, Cont (x0, Ret (k, Var x0)))))
   | Alpha.Ne (e0, e1) ->
     g env e0 (fun v0 ->
       g env e1 (fun v1 ->
-        let y0 = Fresh.f () in Ne (v0, v1, Cont (y0, Ret (k, Var y0)))))
+        let x0 = Fresh.f () in Ne (v0, v1, Cont (x0, Ret (k, Var x0)))))
   | Alpha.Not e0 ->
     g env e0 (fun v0 ->
-      let y0 = Fresh.f () in Not (v0, Cont (y0, Ret (k, Var y0))))
+      let x0 = Fresh.f () in Not (v0, Cont (x0, Ret (k, Var x0))))
   | Alpha.Neg e0 ->
     g env e0 (fun v0 ->
-      let y0 = Fresh.f () in Neg (v0, Cont (y0, Ret (k, Var y0))))
+      let x0 = Fresh.f () in Neg (v0, Cont (x0, Ret (k, Var x0))))
 
 and g env e (k: term -> exp) =
   match e.it with
-  | Alpha.Var y0 when Env.mem y0 env ->
-    k @@ Env.lookup y0 env
-  | Alpha.Var y0 ->
-    k @@ Var y0
+  | Alpha.Var x0 when Env.mem x0 env ->
+    k @@ Env.lookup x0 env
+  | Alpha.Var x0 ->
+    k @@ Var x0
   | Alpha.Lit l0 -> begin
     match l0.it with
     | Alpha.Int  n0 -> k @@ Lit (Int n0)
     | Alpha.Bool b0 -> k @@ Lit (Bool b0)
     | Alpha.Unit    -> k @@ Lit Unit
     end
-  | Alpha.Fun ((y0, _), e0) ->
-    let y1 = Fresh.f () in
-    k @@ Fun (y0, y1, f env e0 y1)
-  | Alpha.LetRec ((y0, _), yts0, e0, e1) ->
-    let y1 = Fresh.f () in
-    LetRec (y0, List.map fst yts0, y1, f env e0 y1, g env e1 k)
-  | Alpha.Let ((y0, _), e0, e1) ->
+  | Alpha.Fun ((x0, _), e0) ->
+    let x1 = Fresh.f () in
+    k @@ Fun (x0, x1, f env e0 x1)
+  | Alpha.LetRec ((x0, _), xts0, e0, e1) ->
+    let x1 = Fresh.f () in
+    LetRec (x0, List.map fst xts0, x1, f env e0 x1, g env e1 k)
+  | Alpha.Let ((x0, _), e0, e1) ->
     g env e0 (fun v0 ->
-      g (Env.extend y0 v0 env) e1 k)
+      g (Env.extend x0 v0 env) e1 k)
   | Alpha.If (e0, e1, e2) ->
     g env e0 (fun v0 ->
       If (v0, g env e1 k, g env e2 k))
   | Alpha.App (e0, e1) ->
     g env e0 (fun v0 ->
       g env e1 (fun v1 ->
-        let y0 = Fresh.f () in App (v0, v1, Cont (y0, k @@ Var y0))))
+        let x0 = Fresh.f () in App (v0, v1, Cont (x0, k @@ Var x0))))
   | Alpha.Add (e0, e1) ->
     g env e0 (fun v0 ->
       g env e1 (fun v1 ->
-        let y0 = Fresh.f () in Add (v0, v1, Cont (y0, k @@ Var y0))))
+        let x0 = Fresh.f () in Add (v0, v1, Cont (x0, k @@ Var x0))))
   | Alpha.Sub (e0, e1) ->
     g env e0 (fun v0 ->
       g env e1 (fun v1 ->
-        let y0 = Fresh.f () in Sub (v0, v1, Cont (y0, k @@ Var y0))))
+        let x0 = Fresh.f () in Sub (v0, v1, Cont (x0, k @@ Var x0))))
   | Alpha.Mul (e0, e1) ->
     g env e0 (fun v0 ->
       g env e1 (fun v1 ->
-        let y0 = Fresh.f () in Mul (v0, v1, Cont (y0, k @@ Var y0))))
+        let x0 = Fresh.f () in Mul (v0, v1, Cont (x0, k @@ Var x0))))
   | Alpha.Div (e0, e1) ->
     g env e0 (fun v0 ->
       g env e1 (fun v1 ->
-        let y0 = Fresh.f () in Div (v0, v1, Cont (y0, k @@ Var y0))))
+        let x0 = Fresh.f () in Div (v0, v1, Cont (x0, k @@ Var x0))))
   | Alpha.Gt (e0, e1) ->
     g env e0 (fun v0 ->
       g env e1 (fun v1 ->
-        let y0 = Fresh.f () in Gt (v0, v1, Cont (y0, k @@ Var y0))))
+        let x0 = Fresh.f () in Gt (v0, v1, Cont (x0, k @@ Var x0))))
   | Alpha.Le (e0, e1) ->
     g env e0 (fun v0 ->
       g env e1 (fun v1 ->
-        let y0 = Fresh.f () in Le (v0, v1, Cont (y0, k @@ Var y0))))
+        let x0 = Fresh.f () in Le (v0, v1, Cont (x0, k @@ Var x0))))
   | Alpha.Eq (e0, e1) ->
     g env e0 (fun v0 ->
       g env e1 (fun v1 ->
-        let y0 = Fresh.f () in Eq (v0, v1, Cont (y0, k @@ Var y0))))
+        let x0 = Fresh.f () in Eq (v0, v1, Cont (x0, k @@ Var x0))))
   | Alpha.Ne (e0, e1) ->
     g env e0 (fun v0 ->
       g env e1 (fun v1 ->
-        let y0 = Fresh.f () in Ne (v0, v1, Cont (y0, k @@ Var y0))))
+        let x0 = Fresh.f () in Ne (v0, v1, Cont (x0, k @@ Var x0))))
   | Alpha.Not e0 ->
     g env e0 (fun v0 ->
-      let y0 = Fresh.f () in Not (v0, Cont (y0, k @@ Var y0)))
+      let x0 = Fresh.f () in Not (v0, Cont (x0, k @@ Var x0)))
   | Alpha.Neg e0 ->
     g env e0 (fun v0 ->
-      let y0 = Fresh.f () in Neg (v0, Cont (y0, k @@ Var y0)))
+      let x0 = Fresh.f () in Neg (v0, Cont (x0, k @@ Var x0)))
 
 let f e = let k = Fresh.f () in Cont(k, f Env.empty e k)

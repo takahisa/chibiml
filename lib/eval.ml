@@ -35,27 +35,27 @@ type value =
 
 let rec f env e k =
   match e.it with
-  | Var y0 ->
-    k @@ Env.lookup y0 env
+  | Var x0 ->
+    k @@ Env.lookup x0 env
   | Lit l0 -> begin
     match l0.it with
     | Int  n0 -> k @@ IntVal n0
     | Bool b0 -> k @@ BoolVal b0
     | Unit    -> k @@ UnitVal
     end
-  | Fun ((y0, _), e0) ->
-    k @@ FunVal (y0, e0, env)
-  | LetRec ((y0, _), [], e0, e1) | Let ((y0, _), e0, e1) ->
+  | Fun ((x0, _), e0) ->
+    k @@ FunVal (x0, e0, env)
+  | LetRec ((x0, _), [], e0, e1) | Let ((x0, _), e0, e1) ->
     f env e0 (fun v0 ->
-      f (Env.extend y0 v0 env) e1 k)
-  | LetRec ((y0, _), (y1, _) :: yts0, e0, e1) when backpatch () ->
-    let e0' = List.fold_right (fun yt -> fun e -> Fun (yt, e) @@@ nowhere) yts0 e0 in
+      f (Env.extend x0 v0 env) e1 k)
+  | LetRec ((x0, _), (x1, _) :: xts0, e0, e1) when backpatch () ->
+    let e0' = List.fold_right (fun xt -> fun e -> Fun (xt, e) @@@ nowhere) xts0 e0 in
     let env0_ref = ref Env.empty in
-    let env0 = Env.extend y0 (RecFunVal_backpatch (y0, y1, e0', env0_ref)) env in
+    let env0 = Env.extend x0 (RecFunVal_backpatch (x0, x1, e0', env0_ref)) env in
     env0_ref := env0; f env0 e1 k
-  | LetRec ((y0, _), (y1, _) :: yts0, e0, e1) ->
-    let e0' = List.fold_right (fun yt -> fun e -> Fun (yt, e) @@@ nowhere) yts0 e0 in
-    let env0 = Env.extend y0 (RecFunVal (y0, y1, e0', env)) env in
+  | LetRec ((x0, _), (x1, _) :: xts0, e0, e1) ->
+    let e0' = List.fold_right (fun xt -> fun e -> Fun (xt, e) @@@ nowhere) xts0 e0 in
+    let env0 = Env.extend x0 (RecFunVal (x0, x1, e0', env)) env in
     f env0 e1 k
   | If (e0, e1, e2) ->
     f env e0 (fun v0 ->
@@ -67,17 +67,17 @@ let rec f env e k =
     f env e1 (fun v1 ->
       f env e0 (fun v0 ->
         match v0 with
-        | RecFunVal_backpatch (y0, y1, e0, env0_ref) ->
+        | RecFunVal_backpatch (x0, x1, e0, env0_ref) ->
           let env0 = !env0_ref in
-          let env1 = Env.extend y0 v0 env0 in
-          let env2 = Env.extend y1 v1 env1 in
+          let env1 = Env.extend x0 v0 env0 in
+          let env2 = Env.extend x1 v1 env1 in
           f env2 e0 k
-        | RecFunVal (y0, y1, e0, env0) ->
-          let env1 = Env.extend y0 v0 env0 in
-          let env2 = Env.extend y1 v1 env1 in
+        | RecFunVal (x0, x1, e0, env0) ->
+          let env1 = Env.extend x0 v0 env0 in
+          let env2 = Env.extend x1 v1 env1 in
           f env2 e0 k
-        | FunVal (y0, e0, env0) ->
-          let env1 = Env.extend y0 v1 env0 in
+        | FunVal (x0, e0, env0) ->
+          let env1 = Env.extend x0 v1 env0 in
           f env1 e0 k
         | _ -> 
           error "invalid argument; function value expected" e0.at))

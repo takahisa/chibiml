@@ -26,41 +26,41 @@ open Source.Position
 
 type var = int
 type exp =
-  | LetRec               of var * var list * exp * exp
-  | Let                  of var * comp * exp
-  | Ret                  of term
+  | LetRec              of var * var list * exp * exp
+  | Let                 of var * comp * exp
+  | Ret                 of term
 (* serious-term; i.e. computations *)
  and comp =
-   | Term                of term
-   | If                  of term * exp * exp
-   | App                 of term * term 
-   | Add                 of term * term
-   | Sub                 of term * term
-   | Mul                 of term * term
-   | Div                 of term * term
-   | Eq                  of term * term
-   | Ne                  of term * term
-   | Gt                  of term * term
-   | Le                  of term * term
-   | Not                 of term
-   | Neg                 of term
+  | Term                of term
+  | If                  of term * exp * exp
+  | App                 of term * term 
+  | Add                 of term * term
+  | Sub                 of term * term
+  | Mul                 of term * term
+  | Div                 of term * term
+  | Eq                  of term * term
+  | Ne                  of term * term
+  | Gt                  of term * term
+  | Le                  of term * term
+  | Not                 of term
+  | Neg                 of term
 (* trivial-term; i.e. values *)
  and term =
-   | Var                 of var
-   | Int                 of int
-   | Bool                of bool
-   | Unit
-   | Fun                 of var * exp
+  | Var                 of var
+  | Int                 of int
+  | Bool                of bool
+  | Unit
+  | Fun                 of var * exp
 
 type value =
-   | RecFunVal           of var * var * exp * (var, value) Env.t
-   | RecFunVal_backpatch of var * var * exp * (var, value) Env.t ref
-   | FunVal              of var * exp * (var, value) Env.t
-   | IntVal              of int
-   | BoolVal             of bool
-   | UnitVal
+  | RecFunVal           of var * var * exp * (var, value) Env.t
+  | RecFunVal_backpatch of var * var * exp * (var, value) Env.t ref
+  | FunVal              of var * exp * (var, value) Env.t
+  | IntVal              of int
+  | BoolVal             of bool
+  | UnitVal
 
-let ret v =
+let return v =
   Ret v
 
 let rec f e k =
@@ -74,72 +74,72 @@ let rec f e k =
       | Alpha.Unit    -> k @@ Unit
     end
   | Alpha.If (e0, e1, e2) ->
-     let y0 = Fresh.f () in
+     let x0 = Fresh.f () in
      f e0 (fun v0 ->
-       Let (y0, If (v0, f e1 ret, f e2 ret), k (Var y0)))
-  | Alpha.LetRec ((y0, _), yts0, e0, e1) ->
-     let e0' = f e0 ret in
+       Let (x0, If (v0, f e1 return, f e2 return), k (Var x0)))
+  | Alpha.LetRec ((x0, _), xts0, e0, e1) ->
+     let e0' = f e0 return in
      let e1' = f e1 k in
-     LetRec (y0, List.map fst yts0, e0', e1')
-  | Alpha.Let ((y0, _), e0, e1) ->
+     LetRec (x0, List.map fst xts0, e0', e1')
+  | Alpha.Let ((x0, _), e0, e1) ->
      f e0 (fun v0 ->
-      Let (y0, Term v0, f e1 k))
-  | Alpha.Fun ((y0, _), e0) ->
-     k @@ Fun (y0, f e0 ret)
+      Let (x0, Term v0, f e1 k))
+  | Alpha.Fun ((x0, _), e0) ->
+     k @@ Fun (x0, f e0 return)
   | Alpha.App (e0, e1) ->
      f e0 (fun v0 ->
       f e1 (fun v1 ->
-        let y0 = Fresh.f () in
-        Let (y0, App (v0, v1), k (Var y0))))
+        let x0 = Fresh.f () in
+        Let (x0, App (v0, v1), k (Var x0))))
   | Alpha.Add (e0, e1) ->
      f e0 (fun v0 ->
       f e1 (fun v1 ->
-        let y0 = Fresh.f () in
-        Let (y0, Add (v0, v1), k (Var y0))))
+        let x0 = Fresh.f () in
+        Let (x0, Add (v0, v1), k (Var x0))))
   | Alpha.Sub (e0, e1) ->
      f e0 (fun v0 ->
       f e1 (fun v1 ->
-        let y0 = Fresh.f () in
-        Let (y0, Sub (v0, v1), k (Var y0))))
+        let x0 = Fresh.f () in
+        Let (x0, Sub (v0, v1), k (Var x0))))
   | Alpha.Mul (e0, e1) ->
      f e0 (fun v0 ->
       f e1 (fun v1 ->
-        let y0 = Fresh.f () in
-        Let (y0, Mul (v0, v1), k (Var y0))))
+        let x0 = Fresh.f () in
+        Let (x0, Mul (v0, v1), k (Var x0))))
   | Alpha.Div (e0, e1) ->
      f e0 (fun v0 ->
       f e1 (fun v1 ->
-        let y0 = Fresh.f () in
-        Let (y0, Div (v0, v1), k (Var y0))))
+        let x0 = Fresh.f () in
+        Let (x0, Div (v0, v1), k (Var x0))))
   | Alpha.Eq (e0, e1) ->
      f e0 (fun v0 ->
       f e1 (fun v1 ->
-        let y0 = Fresh.f () in
-        Let (y0, Eq (v0, v1), k (Var y0))))
+        let x0 = Fresh.f () in
+        Let (x0, Eq (v0, v1), k (Var x0))))
   | Alpha.Ne (e0, e1) ->
      f e0 (fun v0 ->
       f e1 (fun v1 ->
-        let y0 = Fresh.f () in
-        Let (y0, Ne (v0, v1), k (Var y0))))
+        let x0 = Fresh.f () in
+        Let (x0, Ne (v0, v1), k (Var x0))))
   | Alpha.Gt (e0, e1) ->
      f e0 (fun v0 ->
       f e1 (fun v1 ->
-        let y0 = Fresh.f () in
-        Let (y0, Gt (v0, v1), k (Var y0))))
+        let x0 = Fresh.f () in
+        Let (x0, Gt (v0, v1), k (Var x0))))
   | Alpha.Le (e0, e1) ->
      f e0 (fun v0 ->
       f e1 (fun v1 ->
-        let y0 = Fresh.f () in
-        Let (y0, Le (v0, v1), k (Var y0))))
+        let x0 = Fresh.f () in
+        Let (x0, Le (v0, v1), k (Var x0))))
   | Alpha.Not e0 ->
-     let y0 = Fresh.f () in
+     let x0 = Fresh.f () in
      f e0 (fun v0 ->
-        Let (y0, Not v0, k (Var y0)))
+        Let (x0, Not v0, k (Var x0)))
   | Alpha.Neg e0 ->
-     let y0 = Fresh.f () in
+     let x0 = Fresh.f () in
      f e0 (fun v0 ->
-        Let (y0, Neg v0, k (Var y0)))
-let f e = f e ret
+        Let (x0, Neg v0, k (Var x0)))
+let f e = f e return
     
 let rec pp_exp = function
   | LetRec (x0, xs0, e0, e1) ->
