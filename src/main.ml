@@ -26,9 +26,11 @@ exception Quit of int
 
 module type MODE = 
   sig
+    type var = Syntax.var
     type exp = Syntax.exp
     type tpe = Syntax.tpe
     type value
+
     val f: exp -> (exp * tpe * value)
     val pp_exp: exp -> string
     val pp_tpe: tpe -> string
@@ -37,6 +39,7 @@ module type MODE =
 
 module Default = 
   struct
+    type var = Syntax.var
     type exp = Syntax.exp
     type tpe = Syntax.tpe
     type value = Eval.value
@@ -46,40 +49,42 @@ module Default =
       let v = Eval.f Env.empty (Alpha.f e) in
       (e, t, v)
         
-    let pp_exp = Pretty.pp_exp
-    let pp_tpe = Pretty.pp_tpe
+    let pp_exp = Pretty.pp_exp (module Syntax)
+    let pp_tpe = Pretty.pp_tpe (module Syntax)
     let pp_value = Eval.pp_value
   end
 
 module CAM_Mode = 
   struct
+    type var = Syntax.var
     type exp = Syntax.exp
     type tpe = Syntax.tpe
     type value = CAM.value
                    
     let f e =
       let t = Typing.f e in
-      let v = CAM.run (CAM.compile (Elim.f (Mnf.f (Alpha.f e)))) in
+      let v = CAM.run (CAM.compile (Elim.f (module Mnf.Elimination) (Mnf.f (Alpha.f e)))) in
       (e, t, v)
         
-    let pp_exp = Pretty.pp_exp
-    let pp_tpe = Pretty.pp_tpe
+    let pp_exp = Pretty.pp_exp (module Syntax)
+    let pp_tpe = Pretty.pp_tpe (module Syntax)
     let pp_value = CAM.pp_value
   end
 
 module ZAM_Mode =
   struct
+    type var = Syntax.var
     type exp = Syntax.exp
     type tpe = Syntax.tpe
     type value = ZAM.value
 
     let f e =
       let t = Typing.f e in
-      let v = ZAM.run (ZAM.compile (Elim.f (Mnf.f (Alpha.f e)))) in
+      let v = ZAM.run (ZAM.compile (Elim.f (module Mnf.Elimination) (Mnf.f (Alpha.f e)))) in
       (e, t, v)
 
-    let pp_exp = Pretty.pp_exp
-    let pp_tpe = Pretty.pp_tpe
+    let pp_exp = Pretty.pp_exp (module Syntax)
+    let pp_tpe = Pretty.pp_tpe (module Syntax)
     let pp_value = ZAM.pp_value
   end
 

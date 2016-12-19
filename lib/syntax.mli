@@ -23,6 +23,15 @@
 open Source
 open Source.Position
 
+module type S =
+  sig
+    type var
+    type exp
+    type tpe
+    val pp_exp: exp -> string
+    val pp_tpe: tpe -> string
+  end
+
 type var = string
 type exp  = exp' fragment
  and exp' =
@@ -53,3 +62,5 @@ type exp  = exp' fragment
     | Bool  of bool
     | Unit
 
+val pp_exp: exp -> string
+val pp_tpe: tpe -> string

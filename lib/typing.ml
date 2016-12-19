@@ -23,7 +23,6 @@
 open Syntax
 open Type
 open TypeScheme
-open Pretty
 open Source
 open Source.Position
 

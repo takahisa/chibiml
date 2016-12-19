@@ -36,7 +36,7 @@ let parse_tpe s =
 let check s0 s1 =
   let t0 = Typing.f (parse_exp s0) in
   let t1 = parse_tpe s1 in
-  assert_equal true (Pretty.pp_tpe t0 = Pretty.pp_tpe t1)
+  assert_equal true (Syntax.pp_tpe t0 = Syntax.pp_tpe t1)
 
 let testcase0 = "testcase0" >:: begin fun () ->
   check "1 + 2" "int"

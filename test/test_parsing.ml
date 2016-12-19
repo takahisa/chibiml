@@ -33,8 +33,8 @@ let parse_tpe s =
   snd @@ Parser.tpe Lexer.token (Lexing.from_string s)
 
 let check e0 e1 =
-  let s0 = Pretty.pp_exp e0 in
-  let s1 = Pretty.pp_exp e1 in
+  let s0 = Syntax.pp_exp e0 in
+  let s1 = Syntax.pp_exp e1 in
   assert_equal s0 s1
 
 let testcase0 = "testcase0" >:: begin fun () ->

@@ -20,6 +20,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *)
-val pp_exp: Syntax.exp -> string
-val pp_tpe: Syntax.tpe -> string
+val pp_exp: (module Syntax.S with type exp = 'a) -> 'a -> string
+val pp_tpe: (module Syntax.S with type tpe = 'a) -> 'a -> string
 

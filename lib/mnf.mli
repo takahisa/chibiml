@@ -20,16 +20,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *)
-open Source
-open Source.Position
-open Alpha
-
 type var = int
 type exp =
   | LetRec of var * var list * exp * exp
   | Let    of var * comp * exp
   | Ret    of term
-
 (* serious-term; i.e. computations *)
  and comp =
    | Term  of term
@@ -45,7 +40,6 @@ type exp =
    | Le    of term * term
    | Not   of term
    | Neg   of term
-
 (* trivial-term; i.e. values *)
  and term =
    | Var  of var
@@ -54,8 +48,10 @@ type exp =
    | Unit
    | Fun  of var * exp
 
+include Syntax.S with type var := var
+                  and type exp := exp
+
 val f: Alpha.exp -> exp
 
-val pp_exp: exp -> string
-val pp_comp: comp -> string
-val pp_term: term -> string
+module Elimination : Elim.S with type Syntax.var = var
+                             and type Syntax.exp = exp
