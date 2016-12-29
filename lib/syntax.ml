@@ -1,17 +1,17 @@
 (*
  * Chibiml
  * Copyright (c) 2015-2016 Takahisa Watanabe <linerlock@outlook.com> All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,12 +21,9 @@
  * THE SOFTWARE.
  *)
 open Source
-open Source.Position
-open Type
 
 module type S =
   sig
-    type var
     type exp
     type tpe
     val pp_exp: exp -> string
@@ -37,31 +34,33 @@ type var  = string
 type exp  = exp' fragment
  and exp' =
    | Var    of var
-   | Lit    of lit
-   | Fun    of (var * tpe) * exp
-   | Let    of (var * tpe) * exp * exp 
+   | Int    of int
+   | Bool   of bool
+   | Unit
    | LetRec of (var * tpe) * (var * tpe) list * exp * exp
-   | If     of exp * exp * exp
+   | Let    of (var * tpe) * exp * exp
+   | Fun    of (var * tpe) * exp
    | App    of exp * exp
+   | If     of exp * exp * exp
    | Add    of exp * exp
    | Sub    of exp * exp
    | Mul    of exp * exp
    | Div    of exp * exp
-   | Gt     of exp * exp
-   | Le     of exp * exp
    | Eq     of exp * exp
    | Ne     of exp * exp
+   | Gt     of exp * exp
+   | GtEq   of exp * exp
+   | Le     of exp * exp
+   | LeEq   of exp * exp
    | Not    of exp
    | Neg    of exp
-
- and tpe  = Type.tpe
- and tpe' = Type.tpe'
-
- and lit  = lit' fragment
- and lit' =
-   | Int   of int
-   | Bool  of bool
-   | Unit
+  and tpe  = tpe' fragment
+  and tpe' =
+   | TyFun  of tpe * tpe
+   | TyVar  of var
+   | TyInt
+   | TyBool
+   | TyUnit
 
 let rec pp_tpe_var n =
   if n <= 25 then
@@ -91,12 +90,12 @@ let rec pp_exp env n e =
   match e.it with
   | Var x0 ->
      (env, n, x0)
-  | Lit v0 -> begin
-     match v0.it with
-     | Int  m0 -> (env, n, string_of_int m0)
-     | Bool b0 -> (env, n, string_of_bool b0)
-     | Unit    -> (env, n, "()")
-    end
+  | Int m0 ->
+     (env, n, string_of_int m0)
+  | Bool b0 ->
+     (env, n, string_of_bool b0)
+  | Unit ->
+     (env, n, "()")
   | Fun ((x0, t0), e0) ->
      let (env0, n0, s0) = pp_tpe env n t0 in
      let (env1, n1, s1) = pp_exp env0 n0 e0 in
@@ -119,7 +118,7 @@ let rec pp_exp env n e =
      let (env0, n0, s0) = pp_exp env n e0 in
      let (env1, n1, s1) = pp_exp env0 n0 e1 in
      let (env2, n2, s2) = pp_exp env1 n1 e2 in
-     (env2, n2, Printf.sprintf "(if %s then %s else %s)" s0 s1 s2) 
+     (env2, n2, Printf.sprintf "(if %s then %s else %s)" s0 s1 s2)
   | App (e0, e1) ->
      let (env0, n0, s0) = pp_exp env n e0 in
      let (env1, n1, s1) = pp_exp env0 n0 e1 in
@@ -152,10 +151,18 @@ let rec pp_exp env n e =
      let (env0, n0, s0) = pp_exp env n e0 in
      let (env1, n1, s1) = pp_exp env0 n0 e1 in
      (env1, n1, Printf.sprintf "(%s > %s)" s0 s1)
+  | GtEq (e0, e1) ->
+     let (env0, n0, s0) = pp_exp env n e0 in
+     let (env1, n1, s1) = pp_exp env0 n0 e1 in
+     (env1, n1, Printf.sprintf "(%s >= %s)" s0 s1)
   | Le (e0, e1) ->
      let (env0, n0, s0) = pp_exp env n e0 in
      let (env1, n1, s1) = pp_exp env0 n0 e1 in
      (env1, n1, Printf.sprintf "(%s < %s)" s0 s1)
+  | LeEq (e0, e1) ->
+     let (env0, n0, s0) = pp_exp env n e0 in
+     let (env1, n1, s1) = pp_exp env0 n0 e1 in
+     (env1, n1, Printf.sprintf "(%s <= %s)" s0 s1)
   | Neg e0 ->
      let (env0, n0, s0) = pp_exp env n e0 in
      (env0, n0, Printf.sprintf "(-%s)" s0)

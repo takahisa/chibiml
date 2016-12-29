@@ -1,17 +1,17 @@
 (*
  * Chibiml
  * Copyright (c) 2015-2016 Takahisa Watanabe <linerlock@outlook.com> All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,26 +25,26 @@ type ('key, 'value) t = ('key * 'value) list
 let empty =
   []
 
-let singleton key value =
-  (key, value) :: empty
+let singleton k v =
+  (k, v) :: empty
 
-let mem key env =
-  List.mem_assoc key env
+let mem k kvs =
+  List.mem_assoc k kvs
 
-let extend key value env =
-  (key, value) :: env
+let extend k v kvs =
+  (k, v) :: kvs
 
-let append env0 env1 =
-  env0 @ env1
+let append kvs kvs' =
+  kvs @ kvs'
 
-let remove key env =
-  List.remove_assoc key env
+let remove k kvs =
+  List.remove_assoc k kvs
 
-let lookup key env =
-  List.assoc key env
+let lookup k kvs =
+  List.assoc k kvs
 
-let of_list xs =
-  xs
+let of_list kvs =
+  kvs
 
-let to_list xs =
-  xs
+let to_list kvs =
+  kvs
