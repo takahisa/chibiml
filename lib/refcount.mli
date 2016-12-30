@@ -1,17 +1,17 @@
 (*
  * Chibiml
  * Copyright (c) 2015-2016 Takahisa Watanabe <linerlock@outlook.com> All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -20,38 +20,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *)
-type var = int
+type var = Cps.var * int ref
+type tpe = Cps.tpe
 type exp =
-  | LetRec of var * var list * exp * exp
-  | Let    of var * comp * exp
-  | Ret    of term
-(* serious-term; i.e. computations *)
- and comp =
-   | Term  of term
-   | If    of term * exp * exp
-   | App   of term * term 
-   | Add   of term * term
-   | Sub   of term * term
-   | Mul   of term * term
-   | Div   of term * term
-   | Eq    of term * term
-   | Ne    of term * term
-   | Gt    of term * term
-   | Le    of term * term
-   | Not   of term
-   | Neg   of term
-(* trivial-term; i.e. values *)
- and term =
-   | Var  of var
-   | Int  of int
-   | Bool of bool
-   | Unit
-   | Fun  of var * exp
+  | LetRec of var * var list * var * exp * exp
+  | If     of term * exp * exp
+  | App    of term * term * cont
+  | Add    of term * term * cont
+  | Sub    of term * term * cont
+  | Mul    of term * term * cont
+  | Div    of term * term * cont
+  | Gt     of term * term * cont
+  | Le     of term * term * cont
+  | Eq     of term * term * cont
+  | Ne     of term * term * cont
+  | Not    of term * cont
+  | Neg    of term * cont
+  | Ret    of var * term
+and term =
+  | Fun    of var * var * exp
+  | Var    of var
+  | Int    of int
+  | Bool   of bool
+  | Unit
+and cont =
+  | Cont   of var * exp
 
-include Syntax.S with type var := var
-                  and type exp := exp
-
-val f: Alpha.exp -> exp
-
-module Elimination : Elim.S with type Syntax.var = var
-                             and type Syntax.exp = exp
+val f: Cps.cont -> cont
