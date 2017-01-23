@@ -26,6 +26,7 @@ type var = Alpha.var
 type tpe = Type.t
 type exp =
   | LetRec of var * var list * var * exp * exp
+  | Let    of var * cont * exp
   | If     of term * exp * exp
   | App    of term * term * cont
   | Add    of term * term * cont
@@ -143,7 +144,10 @@ and g env e (k: term -> exp) =
         g (Env.extend x0 v0 env) e1 k)
   | Alpha.If (e0, e1, e2) ->
     g env e0 (fun v0 ->
-        If (v0, g env e1 k, g env e2 k))
+        let x0 = Fresh.f () in
+        let x1 = Fresh.f () in
+        Let (x0, Cont (x1, k @@ Var x1),
+             If (v0, f env e1 x0, f env e2 x0)))
   | Alpha.App (e0, e1) ->
     g env e0 (fun v0 ->
         g env e1 (fun v1 ->
@@ -198,6 +202,9 @@ let rec pp_exp = function
   | LetRec (x0, xs0, x1, e0, e1) ->
     Printf.sprintf "let rec _%d %s _%d = %s in %s"
       x0 (String.concat " " @@ List.map (fun n -> "_" ^ string_of_int n) xs0) x1 (pp_exp e0) (pp_exp e1)
+  | Let (x0, c0, e0) ->
+    Printf.sprintf "let _%d = %s in %s"
+      x0 (pp_cont c0) (pp_exp e0)
   | If (v0, e0, e1) ->
     Printf.sprintf "(if %s then %s else %s)"
       (pp_term v0) (pp_exp e0) (pp_exp e1)

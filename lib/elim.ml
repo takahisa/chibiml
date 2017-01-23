@@ -50,6 +50,8 @@ let rec f sub = function
     f sub e1
   | R.LetRec ((x0, n0), xs0, _, e0, e1) ->
     LetRec (x0, List.map fst xs0, f sub e0, f sub e1)
+  | R.Let ((x0, _), R.Cont ((x1, _), e0), e1) ->
+    Let (x0, Fun (x1, f sub e0), f sub e1)
   | R.If (v0, e0, e1) ->
     If (g sub v0, f sub e0, f sub e1)
   | R.App (v0, v1, R.Cont ((x0, n0), e0)) when (!n0 <= 1) ->

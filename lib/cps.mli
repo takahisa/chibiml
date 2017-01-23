@@ -26,6 +26,7 @@ type var = Alpha.var
 type tpe = Type.t
 type exp =
   | LetRec of var * var list * var * exp * exp
+  | Let    of var * cont * exp
   | If     of term * exp * exp
   | App    of term * term * cont
   | Add    of term * term * cont

@@ -24,6 +24,7 @@ type var = Cps.var * int ref
 type tpe = Cps.tpe
 type exp =
   | LetRec of var * var list * var * exp * exp
+  | Let    of var * cont * exp
   | If     of term * exp * exp
   | App    of term * term * cont
   | Add    of term * term * cont
@@ -61,6 +62,12 @@ let rec f env = function
     let e0' = f env1 e0 in
     let e1' = f env0 e1 in
     LetRec (x0', xs0', x1', e0', e1')
+  | Cps.Let (x0, Cps.Cont (x1, e0), e1) ->
+    let x0' = counter x0 in
+    let x1' = counter x1 in
+    let e0' = f (Env.extend x1 x1' env) e0 in
+    let e1' = f (Env.extend x0 x0' env) e1 in
+    Let (x0', Cont (x1', e0'), e1')
   | Cps.If (v0, e0, e1) ->
     let v0' = g env v0 in
     let e0' = f env e0 in
