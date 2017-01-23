@@ -91,26 +91,26 @@ let unknown () =
 let compile e =
   let rec f env = function
     | Elim.Var x0 ->
-       [ZAM_Acc (address env x0)]
+      [ZAM_Acc (address env x0)]
     | Elim.Int n0 ->
-       [ZAM_Ldi n0]
+      [ZAM_Ldi n0]
     | Elim.Bool b0 ->
-       [ZAM_Ldb b0]
+      [ZAM_Ldb b0]
     | Elim.Unit ->
-       [ZAM_Ldi 0]
+      [ZAM_Ldi 0]
     | Elim.If (e0, e1, e2) ->
-       (f env e0) @ [ZAM_Test (f env e1, f env e2)]
+      (f env e0) @ [ZAM_Test (f env e1, f env e2)]
     | Elim.LetRec (x0, x1 :: xs0, e0, e1) ->
-       let e0' = List.fold_right (fun x -> fun e -> Elim.Fun (x, e)) xs0 e0 in
-       let env0 = x0 :: env in
-       let env1 = x1 :: env0 in
-       [ZAM_Closure (g env1 e0'); ZAM_Let] @ (f env0 e1) @ [ZAM_End]
+      let e0' = List.fold_right (fun x -> fun e -> Elim.Fun (x, e)) xs0 e0 in
+      let env0 = x0 :: env in
+      let env1 = x1 :: env0 in
+      [ZAM_Closure (g env1 e0'); ZAM_Let] @ (f env0 e1) @ [ZAM_End]
     | Elim.Let (x0, e0, e1) ->
-       (f env e0) @ [ZAM_Let] @ (f env e1) @ [ZAM_End]
+      (f env e0) @ [ZAM_Let] @ (f env e1) @ [ZAM_End]
     | Elim.Fun (x0, e0) ->
-       [ZAM_Closure (g (x0 :: Fresh.f () :: env) e0)]
+      [ZAM_Closure (g (x0 :: Fresh.f () :: env) e0)]
     | Elim.App _ as e0 ->
-       ZAM_Mark :: (h env e0) @ [ZAM_App]
+      ZAM_Mark :: (h env e0) @ [ZAM_App]
     | Elim.Add (e0, e1) -> (f env e1) @ (f env e0) @ [ZAM_Add]
     | Elim.Sub (e0, e1) -> (f env e1) @ (f env e0) @ [ZAM_Sub]
     | Elim.Mul (e0, e1) -> (f env e1) @ (f env e0) @ [ZAM_Mul]
@@ -122,113 +122,113 @@ let compile e =
     | Elim.Not e0 -> (f env e0) @ [ZAM_Not]
     | Elim.Neg e0 -> (f env e0) @ [ZAM_Neg]
     | _ ->
-       unknown ()
+      unknown ()
 
   and g env = function
     | Elim.Var _ | Elim.Int _ | Elim.Bool _ | Elim.Unit
     | Elim.Add _ | Elim.Sub _ | Elim.Mul _ | Elim.Div _
     | Elim.Eq  _ | Elim.Ne  _ | Elim.Gt  _ | Elim.Le  _  as e0 ->
-       (f env e0) @ [ZAM_Ret]
+      (f env e0) @ [ZAM_Ret]
     | Elim.If (e0, e1, e2) ->
-       (f env e0) @ [ZAM_Test (g env e1, g env e2)]
+      (f env e0) @ [ZAM_Test (g env e1, g env e2)]
     | Elim.LetRec (x0, x1 :: xs0, e0, e1) ->
-       let e0' = List.fold_right (fun x -> fun e -> Elim.Fun (x, e)) xs0 e0 in
-       let env0 = x0 :: env in
-       let env1 = x1 :: env0 in
-       [ZAM_Closure (g env1 e0'); ZAM_Let] @ (g env0 e1)
+      let e0' = List.fold_right (fun x -> fun e -> Elim.Fun (x, e)) xs0 e0 in
+      let env0 = x0 :: env in
+      let env1 = x1 :: env0 in
+      [ZAM_Closure (g env1 e0'); ZAM_Let] @ (g env0 e1)
     | Elim.Let (x0, e0, e1) ->
-       (f env e0) @ [ZAM_Let] @ (g (x0 :: env) e1)
+      (f env e0) @ [ZAM_Let] @ (g (x0 :: env) e1)
     | Elim.Fun (x0, e0) ->
-       ZAM_Grab :: (g (x0 :: Fresh.f () :: env) e0)
+      ZAM_Grab :: (g (x0 :: Fresh.f () :: env) e0)
     | Elim.App _ as e0 ->
-       (h env e0) @ [ZAM_TailApp]
+      (h env e0) @ [ZAM_TailApp]
     | _ ->
-       unknown ()
+      unknown ()
 
   and h env = function
     | Elim.App (e0, e1) -> begin
-      match e0 with
-      | Elim.App _ -> f env e1 @ h env e0
-      | _          -> f env e1 @ f env e0
-    end
+        match e0 with
+        | Elim.App _ -> f env e1 @ h env e0
+        | _          -> f env e1 @ f env e0
+      end
     | _ ->
-       unknown ()
+      unknown ()
   in
   f [] e
 
 let rec run = function
   | ZAM_Ldi n0 :: c0, e0, vs0, rs0 ->
-     let vs1 = ZAM_IntVal n0 :: vs0 in
-     run (c0, e0, vs1, rs0)
+    let vs1 = ZAM_IntVal n0 :: vs0 in
+    run (c0, e0, vs1, rs0)
   | ZAM_Ldb b0 :: c0, e0, vs0, rs0 ->
-     let vs1 = ZAM_BoolVal b0 :: vs0 in
-     run (c0, e0, vs1, rs0)
+    let vs1 = ZAM_BoolVal b0 :: vs0 in
+    run (c0, e0, vs1, rs0)
   | ZAM_Acc i0 :: c0, e0, vs0, rs0 ->
-     let vs1 = List.nth e0 i0 :: vs0 in
-     run (c0, e0, vs1, rs0)
+    let vs1 = List.nth e0 i0 :: vs0 in
+    run (c0, e0, vs1, rs0)
   | ZAM_Closure c1 :: c0, e0, vs0, rs0 ->
-     let vs1 = ZAM_ClosureVal (c1, e0) :: vs0 in
-     run (c0, e0, vs1, rs0)
+    let vs1 = ZAM_ClosureVal (c1, e0) :: vs0 in
+    run (c0, e0, vs1, rs0)
   | ZAM_Let :: c0, e0, v0 :: vs0, rs0 ->
-     let e1 = v0 :: e0 in
-     run (c0, e1, vs0, rs0)
+    let e1 = v0 :: e0 in
+    run (c0, e1, vs0, rs0)
   | ZAM_End :: c0, _ :: e0, vs0, rs0 ->
-     run (c0, e0, vs0, rs0)
+    run (c0, e0, vs0, rs0)
   | ZAM_Test (c1, c2) :: c0, e0, ZAM_BoolVal true :: vs0, rs0 ->
-     run (c1 @ c0, e0, vs0, rs0)
+    run (c1 @ c0, e0, vs0, rs0)
   | ZAM_Test (c1, c2) :: c0, e0, ZAM_BoolVal false :: vs0, rs0 ->
-     run (c2 @ c0, e0, vs0, rs0)
+    run (c2 @ c0, e0, vs0, rs0)
   | ZAM_Add :: c0, e0, ZAM_IntVal n0 :: ZAM_IntVal n1 :: vs0, rs0 ->
-     let vs1 = ZAM_IntVal (n0 + n1) :: vs0 in
-     run (c0, e0, vs1, rs0)
+    let vs1 = ZAM_IntVal (n0 + n1) :: vs0 in
+    run (c0, e0, vs1, rs0)
   | ZAM_Sub :: c0, e0, ZAM_IntVal n0 :: ZAM_IntVal n1 :: vs0, rs0 ->
-     let vs1 = ZAM_IntVal (n0 - n1) :: vs0 in
-     run (c0, e0, vs1, rs0)
+    let vs1 = ZAM_IntVal (n0 - n1) :: vs0 in
+    run (c0, e0, vs1, rs0)
   | ZAM_Mul :: c0, e0, ZAM_IntVal n0 :: ZAM_IntVal n1 :: vs0, rs0 ->
-     let vs1 = ZAM_IntVal (n0 * n1) :: vs0 in
-     run (c0, e0, vs1, rs0)
+    let vs1 = ZAM_IntVal (n0 * n1) :: vs0 in
+    run (c0, e0, vs1, rs0)
   | ZAM_Div :: c0, e0, ZAM_IntVal n0 :: ZAM_IntVal n1 :: vs0, rs0 ->
-     let vs1 = ZAM_IntVal (n0 / n1) :: vs0 in
-     run (c0, e0, vs1, rs0)
+    let vs1 = ZAM_IntVal (n0 / n1) :: vs0 in
+    run (c0, e0, vs1, rs0)
   | ZAM_Neg :: c0, e0, ZAM_IntVal n0 ::  vs0, rs0 ->
-     let vs1 = ZAM_IntVal(-n0) :: vs0 in
-     run (c0, e0, vs1, rs0)
+    let vs1 = ZAM_IntVal(-n0) :: vs0 in
+    run (c0, e0, vs1, rs0)
   | ZAM_Not :: c0, e0, ZAM_BoolVal b0 :: vs0, rs0 ->
-     let vs1 = ZAM_BoolVal (not b0) :: vs0 in
-     run (c0, e0, vs1, rs0)
+    let vs1 = ZAM_BoolVal (not b0) :: vs0 in
+    run (c0, e0, vs1, rs0)
   | ZAM_Gt :: c0, e0, ZAM_IntVal n0 :: ZAM_IntVal n1 :: vs0, rs0 ->
-     let vs1 = ZAM_BoolVal (n0 > n1) :: vs0 in
-     run (c0, e0, vs1, rs0)
+    let vs1 = ZAM_BoolVal (n0 > n1) :: vs0 in
+    run (c0, e0, vs1, rs0)
   | ZAM_Le :: c0, e0, ZAM_IntVal n0 :: ZAM_IntVal n1 :: vs0, rs0 ->
-     let vs1 = ZAM_BoolVal (n0 < n1) :: vs0 in
-     run (c0, e0, vs1, rs0)
+    let vs1 = ZAM_BoolVal (n0 < n1) :: vs0 in
+    run (c0, e0, vs1, rs0)
   | ZAM_Eq :: c0, e0, v0 :: v1 :: vs0, rs0 ->
-     let vs1 = ZAM_BoolVal (v0 = v1) :: vs0 in
-     run (c0, e0, vs1, rs0)
+    let vs1 = ZAM_BoolVal (v0 = v1) :: vs0 in
+    run (c0, e0, vs1, rs0)
   | ZAM_App :: c0, e0, ZAM_ClosureVal (c1, e1) :: v0 :: vs0, rs0 ->
-     let e2 = v0 :: ZAM_ClosureVal (c1, e1) :: e1 in
-     let rs1 = ZAM_ClosureVal (c0, e0) :: rs0 in
-     run (c1, e2, vs0, rs1)
+    let e2 = v0 :: ZAM_ClosureVal (c1, e1) :: e1 in
+    let rs1 = ZAM_ClosureVal (c0, e0) :: rs0 in
+    run (c1, e2, vs0, rs1)
   | ZAM_TailApp :: c0, e0, ZAM_ClosureVal (c1, e1) :: v0 :: vs0, rs0 ->
-     let e2 = v0 :: ZAM_ClosureVal (c1, e1) :: e1 in
-     run (c1, e2, vs0, rs0)
+    let e2 = v0 :: ZAM_ClosureVal (c1, e1) :: e1 in
+    run (c1, e2, vs0, rs0)
   | ZAM_Mark :: c0, e0, vs0, rs0 ->
-     let vs1 = ZAM_Epsilon :: vs0 in
-     run (c0, e0, vs1, rs0)
+    let vs1 = ZAM_Epsilon :: vs0 in
+    run (c0, e0, vs1, rs0)
   | ZAM_Grab :: c0, e0, ZAM_Epsilon :: vs0, ZAM_ClosureVal (c1, e1) :: rs0 ->
-     let vs1 = ZAM_ClosureVal (c0, e0) :: vs0 in
-     run (c1, e1, vs1, rs0)
+    let vs1 = ZAM_ClosureVal (c0, e0) :: vs0 in
+    run (c1, e1, vs1, rs0)
   | ZAM_Grab :: c0, e0, v0 :: vs0, rs0 ->
-     let e1 = v0 :: ZAM_ClosureVal (c0, e0) :: e0 in
-     run (c0, e1, vs0, rs0)
+    let e1 = v0 :: ZAM_ClosureVal (c0, e0) :: e0 in
+    run (c0, e1, vs0, rs0)
   | ZAM_Ret :: c0, e0, v0 :: ZAM_Epsilon :: vs0, ZAM_ClosureVal(c1, e1) :: rs0 ->
-     let vs1 = v0 :: vs0 in
-     run (c1, e1, vs1, rs0)
+    let vs1 = v0 :: vs0 in
+    run (c1, e1, vs1, rs0)
   | ZAM_Ret :: c0, e0, ZAM_ClosureVal (c1, e1) :: v0 :: vs0, rs0 ->
-     let e2 = v0 :: ZAM_ClosureVal (c1, e1) :: e1 in
-     run (c1, e2, vs0, rs0)
+    let e2 = v0 :: ZAM_ClosureVal (c1, e1) :: e1 in
+    run (c1, e2, vs0, rs0)
   | [], _, v0 :: [], [] ->
-     v0
+    v0
   | _ ->
-     error ~message:"virtual machine enter an illegal-state" ~at:nowhere
+    error ~message:"virtual machine enter an illegal-state" ~at:nowhere
 let run c = run (c, [], [], [])

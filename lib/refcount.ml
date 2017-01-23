@@ -51,109 +51,109 @@ let counter x =
 
 let rec f env = function
   | Cps.LetRec (x0, xs0, x1, e0, e1) ->
-     let x0' = counter x0 in
-     let x1' = counter x1 in
-     let xs0' = List.map counter xs0 in
-     let env0 = Env.extend x0 x0' env in
-     let env1 = List.fold_right begin fun (x, n) -> fun env ->
-       Env.extend x (x, n) env
-     end (xs0' @ [x1']) env0 in
-     let e0' = f env1 e0 in
-     let e1' = f env0 e1 in
-     LetRec (x0', xs0', x1', e0', e1')
+    let x0' = counter x0 in
+    let x1' = counter x1 in
+    let xs0' = List.map counter xs0 in
+    let env0 = Env.extend x0 x0' env in
+    let env1 = List.fold_right begin fun (x, n) -> fun env ->
+        Env.extend x (x, n) env
+      end (xs0' @ [x1']) env0 in
+    let e0' = f env1 e0 in
+    let e1' = f env0 e1 in
+    LetRec (x0', xs0', x1', e0', e1')
   | Cps.If (v0, e0, e1) ->
-     let v0' = g env v0 in
-     let e0' = f env e0 in
-     let e1' = f env e1 in
-     If (v0', e0', e1')
+    let v0' = g env v0 in
+    let e0' = f env e0 in
+    let e1' = f env e1 in
+    If (v0', e0', e1')
   | Cps.App (v0, v1, Cps.Cont (x0, e0)) ->
-     let v0' = g env v0 in
-     let v1' = g env v1 in
-     let x0' = counter x0 in
-     let e0' = f (Env.extend x0 x0' env) e0 in
-     App (v0', v1', Cont (x0', e0'))
+    let v0' = g env v0 in
+    let v1' = g env v1 in
+    let x0' = counter x0 in
+    let e0' = f (Env.extend x0 x0' env) e0 in
+    App (v0', v1', Cont (x0', e0'))
   | Cps.Add (v0, v1, Cps.Cont (x0, e0)) ->
-     let v0' = g env v0 in
-     let v1' = g env v1 in
-     let x0' = counter x0 in
-     let e0' = f (Env.extend x0 x0' env) e0 in
-     Add (v0', v1', Cont (x0', e0'))
+    let v0' = g env v0 in
+    let v1' = g env v1 in
+    let x0' = counter x0 in
+    let e0' = f (Env.extend x0 x0' env) e0 in
+    Add (v0', v1', Cont (x0', e0'))
   | Cps.Sub (v0, v1, Cps.Cont (x0, e0)) ->
-     let v0' = g env v0 in
-     let v1' = g env v1 in
-     let x0' = counter x0 in
-     let e0' = f (Env.extend x0 x0' env) e0 in
-     Sub (v0', v1', Cont (x0', e0'))
+    let v0' = g env v0 in
+    let v1' = g env v1 in
+    let x0' = counter x0 in
+    let e0' = f (Env.extend x0 x0' env) e0 in
+    Sub (v0', v1', Cont (x0', e0'))
   | Cps.Mul (v0, v1, Cps.Cont (x0, e0)) ->
-     let v0' = g env v0 in
-     let v1' = g env v1 in
-     let x0' = counter x0 in
-     let e0' = f (Env.extend x0 x0' env) e0 in
-     Mul (v0', v1', Cont (x0', e0'))
+    let v0' = g env v0 in
+    let v1' = g env v1 in
+    let x0' = counter x0 in
+    let e0' = f (Env.extend x0 x0' env) e0 in
+    Mul (v0', v1', Cont (x0', e0'))
   | Cps.Div (v0, v1, Cps.Cont (x0, e0)) ->
-     let v0' = g env v0 in
-     let v1' = g env v1 in
-     let x0' = counter x0 in
-     let e0' = f (Env.extend x0 x0' env) e0 in
-     Div (v0', v1', Cont (x0', e0'))
+    let v0' = g env v0 in
+    let v1' = g env v1 in
+    let x0' = counter x0 in
+    let e0' = f (Env.extend x0 x0' env) e0 in
+    Div (v0', v1', Cont (x0', e0'))
   | Cps.Eq (v0, v1, Cps.Cont (x0, e0)) ->
-     let v0' = g env v0 in
-     let v1' = g env v1 in
-     let x0' = counter x0 in
-     let e0' = f (Env.extend x0 x0' env) e0 in
-     Eq (v0', v1', Cont (x0', e0'))
+    let v0' = g env v0 in
+    let v1' = g env v1 in
+    let x0' = counter x0 in
+    let e0' = f (Env.extend x0 x0' env) e0 in
+    Eq (v0', v1', Cont (x0', e0'))
   | Cps.Ne (v0, v1, Cps.Cont (x0, e0)) ->
-     let v0' = g env v0 in
-     let v1' = g env v1 in
-     let x0' = counter x0 in
-     let e0' = f (Env.extend x0 x0' env) e0 in
-     Ne (v0', v1', Cont (x0', e0'))
+    let v0' = g env v0 in
+    let v1' = g env v1 in
+    let x0' = counter x0 in
+    let e0' = f (Env.extend x0 x0' env) e0 in
+    Ne (v0', v1', Cont (x0', e0'))
   | Cps.Gt (v0, v1, Cps.Cont (x0, e0)) ->
-     let v0' = g env v0 in
-     let v1' = g env v1 in
-     let x0' = counter x0 in
-     let e0' = f (Env.extend x0 x0' env) e0 in
-     Gt (v0', v1', Cont (x0', e0'))
+    let v0' = g env v0 in
+    let v1' = g env v1 in
+    let x0' = counter x0 in
+    let e0' = f (Env.extend x0 x0' env) e0 in
+    Gt (v0', v1', Cont (x0', e0'))
   | Cps.Le (v0, v1, Cps.Cont (x0, e0)) ->
-     let v0' = g env v0 in
-     let v1' = g env v1 in
-     let x0' = counter x0 in
-     let e0' = f (Env.extend x0 x0' env) e0 in
-     Le (v0', v1', Cont (x0', e0'))
+    let v0' = g env v0 in
+    let v1' = g env v1 in
+    let x0' = counter x0 in
+    let e0' = f (Env.extend x0 x0' env) e0 in
+    Le (v0', v1', Cont (x0', e0'))
   | Cps.Not (v0, Cps.Cont (x0, e0)) ->
-     let v0' = g env v0 in
-     let x0' = counter x0 in
-     let e0' = f (Env.extend x0 x0' env) e0 in
-     Not (v0', Cont (x0', e0'))
+    let v0' = g env v0 in
+    let x0' = counter x0 in
+    let e0' = f (Env.extend x0 x0' env) e0 in
+    Not (v0', Cont (x0', e0'))
   | Cps.Neg (v0, Cps.Cont (x0, e0)) ->
-     let v0' = g env v0 in
-     let x0' = counter x0 in
-     let e0' = f (Env.extend x0 x0' env) e0 in
-     Neg (v0', Cont (x0', e0'))
+    let v0' = g env v0 in
+    let x0' = counter x0 in
+    let e0' = f (Env.extend x0 x0' env) e0 in
+    Neg (v0', Cont (x0', e0'))
   | Cps.Ret (x0, v0) ->
-     let (_, n0) = Env.lookup x0 env in
-     incr n0;
-     let x0' = (x0, n0) in
-     let v0' = g env v0 in
-     Ret (x0', v0')
+    let (_, n0) = Env.lookup x0 env in
+    incr n0;
+    let x0' = (x0, n0) in
+    let v0' = g env v0 in
+    Ret (x0', v0')
 
 and g env = function
   | Cps.Fun (x0, x1, e0) ->
-     let x0' = counter x0 in
-     let x1' = counter x1 in
-     let env0 = Env.extend x0 x0' env in
-     let env1 = Env.extend x1 x1' env0 in
-     let e0' = f env1 e0 in
-     Fun (x0', x1', e0')
+    let x0' = counter x0 in
+    let x1' = counter x1 in
+    let env0 = Env.extend x0 x0' env in
+    let env1 = Env.extend x1 x1' env0 in
+    let e0' = f env1 e0 in
+    Fun (x0', x1', e0')
   | Cps.Var x0 ->
-     let (_, n0) = Env.lookup x0 env in
-     incr n0; Var (x0, n0)
+    let (_, n0) = Env.lookup x0 env in
+    incr n0; Var (x0, n0)
   | Cps.Int n0 ->
-     Int n0
+    Int n0
   | Cps.Bool b0 ->
-     Bool b0
+    Bool b0
   | Cps.Unit ->
-     Unit
+    Unit
 
 let f (Cps.Cont (x0, e0)) =
   let x0' = counter x0 in

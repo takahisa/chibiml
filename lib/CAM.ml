@@ -79,104 +79,104 @@ let rec address env x =
 
 let rec compile env = function
   | Elim.Var x0 ->
-     [CAM_Acc (address env x0)]
+    [CAM_Acc (address env x0)]
   | Elim.Int n0 ->
-     [CAM_Ldi n0]
+    [CAM_Ldi n0]
   | Elim.Bool b0 ->
-     [CAM_Ldb b0]
+    [CAM_Ldb b0]
   | Elim.Unit ->
-     [CAM_Ldi 0]
+    [CAM_Ldi 0]
   | Elim.Fun (x0, e0) ->
-     [CAM_Closure (compile (x0 :: Fresh.f () :: env) e0 @ [CAM_Ret])]
+    [CAM_Closure (compile (x0 :: Fresh.f () :: env) e0 @ [CAM_Ret])]
   | Elim.LetRec (x0, x1 :: xs0, e0, e1) ->
-     let e0' = List.fold_right (fun x -> fun e -> Elim.Fun (x, e)) xs0 e0 in
-     let env0 = x0 :: env in
-     let env1 = x1 :: env0 in
-     [CAM_Closure ((compile env1 e0') @ [CAM_Ret])] @ [CAM_Let] @ (compile env0 e1) @ [CAM_End]
+    let e0' = List.fold_right (fun x -> fun e -> Elim.Fun (x, e)) xs0 e0 in
+    let env0 = x0 :: env in
+    let env1 = x1 :: env0 in
+    [CAM_Closure ((compile env1 e0') @ [CAM_Ret])] @ [CAM_Let] @ (compile env0 e1) @ [CAM_End]
   | Elim.LetRec (x0, [], e0, e1) | Elim.Let (x0, e0, e1) ->
-     (compile env e0) @ [CAM_Let] @ (compile (x0 :: env) e1) @ [CAM_End]
+    (compile env e0) @ [CAM_Let] @ (compile (x0 :: env) e1) @ [CAM_End]
   | Elim.If (e0, e1, e2) ->
-     (compile env e0) @ [CAM_Test ((compile env e1), (compile env e2))]
+    (compile env e0) @ [CAM_Test ((compile env e1), (compile env e2))]
   | Elim.App (e0, v1) ->
-     (compile env v1) @ (compile env e0) @ [CAM_App]
+    (compile env v1) @ (compile env e0) @ [CAM_App]
   | Elim.Add (e0, v1) ->
-     (compile env v1) @ (compile env e0) @ [CAM_Add]
+    (compile env v1) @ (compile env e0) @ [CAM_Add]
   | Elim.Sub (e0, v1) ->
-     (compile env v1) @ (compile env e0) @ [CAM_Sub]
+    (compile env v1) @ (compile env e0) @ [CAM_Sub]
   | Elim.Mul (e0, v1) ->
-     (compile env v1) @ (compile env e0) @ [CAM_Mul]
+    (compile env v1) @ (compile env e0) @ [CAM_Mul]
   | Elim.Div (e0, v1) ->
-     (compile env v1) @ (compile env e0) @ [CAM_Div]
+    (compile env v1) @ (compile env e0) @ [CAM_Div]
   | Elim.Eq (e0, v1) ->
-     (compile env v1) @ (compile env e0) @ [CAM_Eq]
+    (compile env v1) @ (compile env e0) @ [CAM_Eq]
   | Elim.Ne (e0, v1) ->
-     (compile env v1) @ (compile env e0) @ [CAM_Eq; CAM_Not]
+    (compile env v1) @ (compile env e0) @ [CAM_Eq; CAM_Not]
   | Elim.Gt (e0, v1) ->
-     (compile env v1) @ (compile env e0) @ [CAM_Gt]
+    (compile env v1) @ (compile env e0) @ [CAM_Gt]
   | Elim.Le (e0, v1) ->
-     (compile env v1) @ (compile env e0) @ [CAM_Le]
+    (compile env v1) @ (compile env e0) @ [CAM_Le]
   | Elim.Not e0 ->
-     (compile env e0) @ [CAM_Not]
+    (compile env e0) @ [CAM_Not]
   | Elim.Neg e0 ->
-     (compile env e0) @ [CAM_Neg]
+    (compile env e0) @ [CAM_Neg]
 let compile e = compile [] e
 
 let rec run = function
   | CAM_Ldi(n0) :: c0, e0, s0 ->
-     let s1 = CAM_IntVal n0 :: s0 in
-     run (c0, e0, s1)
+    let s1 = CAM_IntVal n0 :: s0 in
+    run (c0, e0, s1)
   | CAM_Ldb(b0) :: c0, e0, s0 ->
-     let s1 = CAM_BoolVal b0 :: s0 in
-     run (c0, e0, s1)
+    let s1 = CAM_BoolVal b0 :: s0 in
+    run (c0, e0, s1)
   | CAM_Acc i0 :: c0, e0, s0 ->
-     let s1 = List.nth e0 i0 :: s0 in
-     run (c0, e0, s1)
+    let s1 = List.nth e0 i0 :: s0 in
+    run (c0, e0, s1)
   | CAM_Closure c1 :: c0, e0, s0 ->
-     let s1 = CAM_ClosureVal (c1, e0) :: s0 in
-     run (c0, e0, s1)
+    let s1 = CAM_ClosureVal (c1, e0) :: s0 in
+    run (c0, e0, s1)
   | CAM_App :: c0, e0, CAM_ClosureVal(c1, e1) :: v0 :: s0 ->
-     let e1 = v0 :: CAM_ClosureVal (c1, e1) :: e1 in
-     let s1 = CAM_ClosureVal (c0, e0) :: s0 in
-     run (c1, e1, s1)
+    let e1 = v0 :: CAM_ClosureVal (c1, e1) :: e1 in
+    let s1 = CAM_ClosureVal (c0, e0) :: s0 in
+    run (c1, e1, s1)
   | CAM_Ret :: c0, e0, v0 :: CAM_ClosureVal (c1, e1) :: s0 ->
-     let s1 = v0 :: s0 in
-     run (c1, e1, s1)
+    let s1 = v0 :: s0 in
+    run (c1, e1, s1)
   | CAM_Let :: c0, e0, v0 :: s0 ->
-     let e1 = v0 :: e0 in
-     run (c0, e1, s0)
+    let e1 = v0 :: e0 in
+    run (c0, e1, s0)
   | CAM_End :: c0, _ :: e0, s0 ->
-     run (c0, e0, s0)
+    run (c0, e0, s0)
   | CAM_Test(c1, c2) :: c0, e0, CAM_BoolVal(true) :: s0 ->
-     run (c1 @ c0, e0, s0)
+    run (c1 @ c0, e0, s0)
   | CAM_Test(c1, c2) :: c0, e0, CAM_BoolVal(false) :: s0 ->
-     run (c2 @ c0, e0, s0)
+    run (c2 @ c0, e0, s0)
   | CAM_Add :: c0, e0, CAM_IntVal(n0) :: CAM_IntVal(n1) :: s0 ->
-     run (c0, e0, CAM_IntVal(n0 + n1) :: s0)
+    run (c0, e0, CAM_IntVal(n0 + n1) :: s0)
   | CAM_Sub :: c0, e0, CAM_IntVal(n0) :: CAM_IntVal(n1) :: s0 ->
-     run (c0, e0, CAM_IntVal(n0 - n1) :: s0)
+    run (c0, e0, CAM_IntVal(n0 - n1) :: s0)
   | CAM_Mul :: c0, e0, CAM_IntVal(n0) :: CAM_IntVal(n1) :: s0 ->
-     run (c0, e0, CAM_IntVal(n0 * n1) :: s0)
+    run (c0, e0, CAM_IntVal(n0 * n1) :: s0)
   | CAM_Div :: c0, e0, CAM_IntVal(n0) :: CAM_IntVal(n1) :: s0 ->
-     run (c0, e0, CAM_IntVal(n0 / n1) :: s0)
+    run (c0, e0, CAM_IntVal(n0 / n1) :: s0)
   | CAM_Not :: c0, e0, CAM_BoolVal(b0) :: s0 ->
-     run (c0, e0, CAM_BoolVal(not b0) :: s0)
+    run (c0, e0, CAM_BoolVal(not b0) :: s0)
   | CAM_Neg :: c0, e0, CAM_IntVal(n0) :: s0 ->
-     run (c0, e0, CAM_IntVal(-n0) :: s0)
+    run (c0, e0, CAM_IntVal(-n0) :: s0)
   | CAM_Eq :: c0, e0, CAM_ClosureVal (_, _) :: CAM_ClosureVal (_, _) :: s0 ->
-     error ~message:"invalid argument; function value cannot be specified" ~at:nowhere
+    error ~message:"invalid argument; function value cannot be specified" ~at:nowhere
   | CAM_Eq :: c0, e0, v0 :: v1 :: s0 ->
-     run (c0, e0, CAM_BoolVal (v0 = v1) :: s0)
+    run (c0, e0, CAM_BoolVal (v0 = v1) :: s0)
   | CAM_Gt :: c0, e0, CAM_IntVal(n0) :: CAM_IntVal(n1) :: s0 ->
-     run (c0, e0, CAM_BoolVal(n0 > n1) :: s0)
+    run (c0, e0, CAM_BoolVal(n0 > n1) :: s0)
   | CAM_Le :: c0, e0, CAM_IntVal(n0) :: CAM_IntVal(n1) :: s0 ->
-     run (c0, e0, CAM_BoolVal(n0 < n1) :: s0)
+    run (c0, e0, CAM_BoolVal(n0 < n1) :: s0)
   | [], _, v0 :: [] ->
-     v0
+    v0
   | (code, env, stack) ->
-     begin
-       print_endline "<code>"; List.iter (fun c -> print_endline @@ pp_instruction c) code;
-       print_endline "<env>"; List.iter (fun e -> print_endline @@ pp_value e) env;
-       print_endline "<stack>"; List.iter (fun v -> print_endline @@ pp_value v) stack;
-       error ~message:"virtual machine enter an illegal-state" ~at:nowhere
-     end
+    begin
+      print_endline "<code>"; List.iter (fun c -> print_endline @@ pp_instruction c) code;
+      print_endline "<env>"; List.iter (fun e -> print_endline @@ pp_value e) env;
+      print_endline "<stack>"; List.iter (fun v -> print_endline @@ pp_value v) stack;
+      error ~message:"virtual machine enter an illegal-state" ~at:nowhere
+    end
 let run c = run (c, [], [])

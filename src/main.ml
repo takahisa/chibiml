@@ -23,61 +23,61 @@
 exception Quit of int
 
 module type MODE =
-  sig
-    include Eval.S
-    val run: Syntax.exp -> (exp * tpe * value)
-  end
+sig
+  include Eval.S
+  val run: Syntax.exp -> (exp * tpe * value)
+end
 
 module Default_mode =
-  struct
-    type exp = Alpha.exp
-    type tpe = Alpha.tpe
-    type value = Eval.value
+struct
+  type exp = Alpha.exp
+  type tpe = Alpha.tpe
+  type value = Eval.value
 
-    let run e =
-      let e0 = Alpha.f e in
-      let t0 = Typing.f e0 in
-      let v0 = Eval.f Env.empty e0 in
-      (e0, t0, v0)
+  let run e =
+    let e0 = Alpha.f e in
+    let t0 = Typing.f e0 in
+    let v0 = Eval.f Env.empty e0 in
+    (e0, t0, v0)
 
-    let pp_exp = Alpha.pp_exp
-    let pp_tpe = Alpha.pp_tpe
-    let pp_value = Eval.pp_value
-  end
+  let pp_exp = Alpha.pp_exp
+  let pp_tpe = Alpha.pp_tpe
+  let pp_value = Eval.pp_value
+end
 
 module CAM_mode =
-  struct
-    type exp = Alpha.exp
-    type tpe = Alpha.tpe
-    type value = CAM.value
+struct
+  type exp = Alpha.exp
+  type tpe = Alpha.tpe
+  type value = CAM.value
 
-    let run e =
-      let e0 = Alpha.f e in
-      let t0 = Typing.f e0 in
-      let v0 = CAM.run (CAM.compile (Elim.f (Cps.f e0))) in
-      (e0, t0, v0)
+  let run e =
+    let e0 = Alpha.f e in
+    let t0 = Typing.f e0 in
+    let v0 = CAM.run (CAM.compile (Elim.f (Cps.f e0))) in
+    (e0, t0, v0)
 
-    let pp_exp = Alpha.pp_exp
-    let pp_tpe = Alpha.pp_tpe
-    let pp_value = CAM.pp_value
-  end
+  let pp_exp = Alpha.pp_exp
+  let pp_tpe = Alpha.pp_tpe
+  let pp_value = CAM.pp_value
+end
 
 module ZAM_mode =
-  struct
-    type exp = Alpha.exp
-    type tpe = Alpha.tpe
-    type value = ZAM.value
+struct
+  type exp = Alpha.exp
+  type tpe = Alpha.tpe
+  type value = ZAM.value
 
-    let run e =
-      let e0 = Alpha.f e in
-      let t0 = Typing.f e0 in
-      let v0 = ZAM.run (ZAM.compile (Elim.f (Cps.f e0))) in
-      (e0, t0, v0)
+  let run e =
+    let e0 = Alpha.f e in
+    let t0 = Typing.f e0 in
+    let v0 = ZAM.run (ZAM.compile (Elim.f (Cps.f e0))) in
+    (e0, t0, v0)
 
-    let pp_exp = Alpha.pp_exp
-    let pp_tpe = Alpha.pp_tpe
-    let pp_value = ZAM.pp_value
-  end
+  let pp_exp = Alpha.pp_exp
+  let pp_tpe = Alpha.pp_tpe
+  let pp_value = ZAM.pp_value
+end
 
 let parse lexbuf =
   Parser.main Lexer.token lexbuf
@@ -85,7 +85,7 @@ let parse lexbuf =
 let parse_file filepath =
   let ichannel = open_in filepath in
   try parse (Lexing.from_channel ichannel) with
-    | e -> close_in ichannel; raise e
+  | e -> close_in ichannel; raise e
 
 let repl (module M : MODE) () =
   while true do
@@ -96,7 +96,7 @@ let repl (module M : MODE) () =
       let (_, t0, v0) = M.run @@ parse (Lexing.from_string line) in
       Printf.printf ": - %s = %s\n" (M.pp_tpe t0) (M.pp_value v0)
     with
-      | Quit n -> print_newline (); raise (Quit n)
+    | Quit n -> print_newline (); raise (Quit n)
   done
 
 let mode = ref (module Default_mode : MODE)
@@ -111,16 +111,16 @@ let _ =
     ]
     (fun path -> filepaths := !filepaths @ path :: [])
     ("chibiml Copyright (c) 2014-2016 Takahisa Watanabe\n" ^
-        "  usage: chibiml [<option>] <file0> <file1> ...\n");
+     "  usage: chibiml [<option>] <file0> <file1> ...\n");
   let (module M : MODE) = !mode in
   try
     match !filepaths with
     | [] -> repl (module M : MODE) ()
     | _  ->
-       List.iter begin fun path ->
-         let (_, t0, v0) = M.run @@ parse_file path in
-         Printf.printf ": - %s = %s\n" (M.pp_tpe t0) (M.pp_value v0)
-       end !filepaths
+      List.iter begin fun path ->
+        let (_, t0, v0) = M.run @@ parse_file path in
+        Printf.printf ": - %s = %s\n" (M.pp_tpe t0) (M.pp_value v0)
+      end !filepaths
   with
-    | Quit n -> exit n
+  | Quit n -> exit n
 ;;
