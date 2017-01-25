@@ -29,7 +29,7 @@ let rec inv_exp e (k: Cps.var) =
     let e1' = inv_exp e1 k in
     LetRec (x0, xs0, e0', e1')
   | Cps.Let (x0, Cps.Cont (x1, e0), e1) ->
-    Let (x0, Fun (x1, inv_exp e k), inv_exp e1 k)
+    Let (x0, Fun (x1, inv_exp e0 k), inv_exp e1 k)
   | Cps.If (v0, e0, e1) ->
     If (inv_term v0, inv_exp e0 k, inv_exp e1 k)
   | Cps.App (v0, v1, Cps.Cont (x0, e0)) ->
