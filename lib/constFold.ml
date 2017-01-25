@@ -32,105 +32,98 @@ let rec const_b env = function
   | Bool b0 -> Some b0
   | _       -> None
 
-let rec f env = function
+let rec fold_exp env = function
   | LetRec (x0, xs0, x1, e0, e1) ->
-    let e0' = f env e0 in
-    let e1' = f env e1 in
+    let e0' = fold_exp env e0 in
+    let e1' = fold_exp env e1 in
     LetRec (x0, xs0, x1, e0', e1')
   | Let (x0, Cont (x1, e0), e1) ->
-    let e0' = f env e0 in
-    let e1' = f env e1 in
+    let e0' = fold_exp env e0 in
+    let e1' = fold_exp env e1 in
     Let (x0, Cont (x1, e0'), e1')
   | If (v0, e0, e1) ->
     (match const_b env v0 with
-     | Some b0 when b0 -> f env e0
-     | Some _          -> f env e1
+     | Some b0 when b0 -> fold_exp env e0
+     | Some _          -> fold_exp env e1
      | _ ->
-       If (v0, f env e0, f env e1))
+       If (fold_term env v0, fold_exp env e0, fold_exp env e1))
   | App (v0, v1, Cont (x1, e0)) ->
-    App (v0, v1, Cont (x1, f env e0))
-  | Add (v0, v1, Cont (x1, e0)) ->
+    App (fold_term env v0, fold_term env v1, Cont (x1, fold_exp env e0))
+  | Add (v0, v1, Cont (x0, e0)) ->
     (match const_i env v0, const_i env v1 with
      | Some n0, Some n1 ->
-       let x0 = Fresh.f () in
-       let v2 = Int (n0 + n1) in
-       Let (x0, Cont (x1, f (Env.extend x1 v2 env) e0), Ret (x0, v2))
+       fold_exp (Env.extend x0 (Int (n0 + n1)) env) e0
      | _ ->
-       Add (v0, v1, Cont (x1, f env e0)))
-  | Sub (v0, v1, Cont (x1, e0)) ->
+       Add (fold_term env v0, fold_term env v1, Cont (x0, fold_exp env e0)))
+  | Sub (v0, v1, Cont (x0, e0)) ->
     (match const_i env v0, const_i env v1 with
      | Some n0, Some n1 ->
-       let x0 = Fresh.f () in
-       let v2 = Int (n0 - n1) in
-       Let (x0, Cont (x1, f (Env.extend x1 v0 env) e0), Ret (x0, v2))
+       fold_exp (Env.extend x0 (Int (n0 - n1)) env) e0
      | _ ->
-       Sub (v0, v1, Cont (x1, f env e0)))
-  | Mul (v0, v1, Cont (x1, e0)) ->
+       Sub (fold_term env v0, fold_term env v1, Cont (x0, fold_exp env e0)))
+  | Mul (v0, v1, Cont (x0, e0)) ->
     (match const_i env v0, const_i env v1 with
      | Some n0, Some n1 ->
-       let x0 = Fresh.f () in
-       let v2 = Int (n0 * n1) in
-       Let (x0, Cont (x1, f (Env.extend x1 v0 env) e0), Ret (x0, v2))
+       fold_exp (Env.extend x0 (Int (n0 * n1)) env) e0
      | _ ->
-       Mul (v0, v1, Cont (x1, f env e0)))
-  | Div (v0, v1, Cont (x1, e0)) ->
+       Mul (v0, v1, Cont (x0, fold_exp env e0)))
+  | Div (v0, v1, Cont (x0, e0)) ->
     (match const_i env v0, const_i env v1 with
      | Some n0, Some n1 ->
-       let x0 = Fresh.f () in
-       let v2 = Int (n0 / n1) in
-       Let (x0, Cont (x1, f (Env.extend x1 v0 env) e0), Ret (x0, v2))
+       fold_exp (Env.extend x0 (Int (n0 / n1)) env) e0
      | _ ->
-       Div (v0, v1, Cont (x1, f env e0)))
-  | Gt (v0, v1, Cont (x1, e0)) ->
+       Div (fold_term env v0, fold_term env v1, Cont (x0, fold_exp env e0)))
+  | Gt (v0, v1, Cont (x0, e0)) ->
     (match const_i env v0, const_i env v1 with
      | Some n0, Some n1 ->
-       let x0 = Fresh.f () in
-       let v0 = Bool (n0 > n1) in
-       Let (x0, Cont (x1, f (Env.extend x1 v0 env) e0), Ret (x0, v0))
+       fold_exp (Env.extend x0 (Bool (n0 > n1)) env) e0
      | _ ->
-       Gt (v0, v1, Cont (x1, f env e0)))
-  | Le (v0, v1, Cont (x1, e0)) ->
+       Gt (fold_term env v0, fold_term env v1, Cont (x0, fold_exp env e0)))
+  | Le (v0, v1, Cont (x0, e0)) ->
     (match const_i env v0, const_i env v1 with
      | Some n0, Some n1 ->
-       let x0 = Fresh.f () in
-       let v2 = Bool (n0 < n1) in
-       Let (x0, Cont (x1, f (Env.extend x1 v2 env) e0), Ret (x0, v2))
+       fold_exp (Env.extend x0 (Bool (n0 < n1)) env) e0
      | _ ->
-       Le (v0, v1, Cont (x1, f env e0)))
-  | Eq (v0, v1, Cont (x1, e0)) ->
+       Le (fold_term env v0, fold_term env v1, Cont (x0, fold_exp env e0)))
+  | Eq (v0, v1, Cont (x0, e0)) ->
     (match const_i env v0, const_i env v1 with
      | Some n0, Some n1 ->
-       let x0 = Fresh.f () in
-       let v0 = Bool (n0 = n1) in
-       Let (x0, Cont (x1, f (Env.extend x1 v0 env) e0), Ret (x0, v0))
+       fold_exp (Env.extend x0 (Bool (n0 = n1)) env) e0
      | _ ->
-       Eq (v0, v1, Cont (x1, f env e0)))
-  | Ne (v0, v1, Cont (x1, e0)) ->
+       Eq (fold_term env v0, fold_term env v1, Cont (x0, fold_exp env e0)))
+  | Ne (v0, v1, Cont (x0, e0)) ->
     (match const_i env v0, const_i env v1 with
      | Some n0, Some n1 ->
-       let x0 = Fresh.f () in
-       let v2 = Bool (n0 <> n1) in
-       Let (x0, Cont (x1, f (Env.extend x1 v2 env) e0), Ret (x0, v2))
+       fold_exp (Env.extend x0 (Bool (n0 <> n1)) env) e0
      | _ ->
-       Ne (v0, v1, Cont (x1, f env e0)))
-  | Not (v0, Cont (x1, e0)) ->
+       Ne (fold_term env v0, fold_term env v1, Cont (x0, fold_exp env e0)))
+  | Not (v0, Cont (x0, e0)) ->
     (match const_b env v0 with
      | Some b0 ->
-       let x0 = Fresh.f () in
-       let v2 = Bool (not b0) in
-       Let (x0, Cont (x1, f (Env.extend x1 v2 env) e0), Ret (x0, v2))
+       fold_exp (Env.extend x0 (Bool (not b0)) env) e0
      | _ ->
-       Not (v0, Cont (x1, f env e0)))
-  | Neg (v0, Cont (x1, e0)) ->
+       Not (v0, Cont (x0, fold_exp env e0)))
+  | Neg (v0, Cont (x0, e0)) ->
     (match const_i env v0 with
-     | Some b0 ->
-       let x0 = Fresh.f () in
-       let v2 = Int (- b0) in
-       Let (x0, Cont (x1, f (Env.extend x1 v0 env) e0), Ret (x0, v2))
+     | Some n0 ->
+       fold_exp (Env.extend x0 (Int (- n0)) env) e0
      | _ ->
-       Neg (v0, Cont (x1, f env e0)))
+       Neg (v0, Cont (x0, fold_exp env e0)))
   | Ret (x0, Fun (x1, x2, e0)) ->
-    Ret (x0, Fun (x1, x2, f env e0))
+    Ret (x0, Fun (x1, x2, fold_exp env e0))
+  | Ret (x0, Var x1) when Env.mem x1 env ->
+    Ret (x0, Env.lookup x1 env)
   | e -> e
 
-let f (Cont (x0, e0)) = Cont (x0, f Env.empty e0)
+and fold_term env = function
+  | Fun (x0, x1, e0) ->
+    Fun (x0, x1, fold_exp env e0)
+  | Var x0 when Env.mem x0 env ->
+    Env.lookup x0 env
+  | v0 -> v0
+
+and fold_cont env = function
+  | Cont (x0, e0) -> Cont (x0, fold_exp env e0)
+
+let f cont =
+  fold_cont Env.empty cont
