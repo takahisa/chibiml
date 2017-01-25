@@ -20,31 +20,4 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *)
-type var = Cps.var * int ref
-type tpe = Cps.tpe
-type exp =
-  | LetRec of var * var list * var * exp * exp
-  | Let    of var * cont * exp
-  | If     of term * exp * exp
-  | App    of term * term * cont
-  | Add    of term * term * cont
-  | Sub    of term * term * cont
-  | Mul    of term * term * cont
-  | Div    of term * term * cont
-  | Gt     of term * term * cont
-  | Le     of term * term * cont
-  | Eq     of term * term * cont
-  | Ne     of term * term * cont
-  | Not    of term * cont
-  | Neg    of term * cont
-  | Ret    of var * term
-and term =
-  | Fun    of var * var * exp
-  | Var    of var
-  | Int    of int
-  | Bool   of bool
-  | Unit
-and cont =
-  | Cont   of var * exp
-
-val f: Cps.cont -> cont
+val f: Cps.cont -> Untyped.exp

@@ -54,7 +54,7 @@ struct
   let run e =
     let e0 = Alpha.f e in
     let t0 = Typing.f e0 in
-    let v0 = CAM.run (CAM.compile (Elim.f (Cps.f e0))) in
+    let v0 = CAM.run (CAM.compile (Inv.f (Cps.f e0))) in
     (e0, t0, v0)
 
   let pp_exp = Alpha.pp_exp
@@ -71,7 +71,7 @@ struct
   let run e =
     let e0 = Alpha.f e in
     let t0 = Typing.f e0 in
-    let v0 = ZAM.run (ZAM.compile (Elim.f (Cps.f e0))) in
+    let v0 = ZAM.run (ZAM.compile (Inv.f (Cps.f e0))) in
     (e0, t0, v0)
 
   let pp_exp = Alpha.pp_exp

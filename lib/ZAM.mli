@@ -49,7 +49,7 @@ type value =
   | ZAM_ClosureVal of instruction list * value list
   | ZAM_Epsilon
 
-val compile: Elim.exp -> instruction list
+val compile: Untyped.exp -> instruction list
 val run: instruction list -> value
 
 val pp_instruction: instruction -> string

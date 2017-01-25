@@ -82,7 +82,7 @@ let pp_value = function
 
 let rec address env x =
   match env with
-  | []        -> error ~message:"no matching variable in environment." ~at:nowhere
+  | []        -> Printf.printf "_%d" x; error ~message:"no matching variable in environment." ~at:nowhere
   | y :: env' -> if (x = y) then 0 else 1 + address env' x
 
 let unknown () =
@@ -90,66 +90,66 @@ let unknown () =
 
 let compile e =
   let rec f env = function
-    | Elim.Var x0 ->
+    | Untyped.Var x0 ->
       [ZAM_Acc (address env x0)]
-    | Elim.Int n0 ->
+    | Untyped.Int n0 ->
       [ZAM_Ldi n0]
-    | Elim.Bool b0 ->
+    | Untyped.Bool b0 ->
       [ZAM_Ldb b0]
-    | Elim.Unit ->
+    | Untyped.Unit ->
       [ZAM_Ldi 0]
-    | Elim.If (e0, e1, e2) ->
+    | Untyped.If (e0, e1, e2) ->
       (f env e0) @ [ZAM_Test (f env e1, f env e2)]
-    | Elim.LetRec (x0, x1 :: xs0, e0, e1) ->
-      let e0' = List.fold_right (fun x -> fun e -> Elim.Fun (x, e)) xs0 e0 in
+    | Untyped.LetRec (x0, x1 :: xs0, e0, e1) ->
+      let e0' = List.fold_right (fun x -> fun e -> Untyped.Fun (x, e)) xs0 e0 in
       let env0 = x0 :: env in
       let env1 = x1 :: env0 in
       [ZAM_Closure (g env1 e0'); ZAM_Let] @ (f env0 e1) @ [ZAM_End]
-    | Elim.Let (x0, e0, e1) ->
-      (f env e0) @ [ZAM_Let] @ (f env e1) @ [ZAM_End]
-    | Elim.Fun (x0, e0) ->
+    | Untyped.Let (x0, e0, e1) ->
+      (f env e0) @ [ZAM_Let] @ (f (x0 :: env) e1) @ [ZAM_End]
+    | Untyped.Fun (x0, e0) ->
       [ZAM_Closure (g (x0 :: Fresh.f () :: env) e0)]
-    | Elim.App _ as e0 ->
+    | Untyped.App _ as e0 ->
       ZAM_Mark :: (h env e0) @ [ZAM_App]
-    | Elim.Add (e0, e1) -> (f env e1) @ (f env e0) @ [ZAM_Add]
-    | Elim.Sub (e0, e1) -> (f env e1) @ (f env e0) @ [ZAM_Sub]
-    | Elim.Mul (e0, e1) -> (f env e1) @ (f env e0) @ [ZAM_Mul]
-    | Elim.Div (e0, e1) -> (f env e1) @ (f env e0) @ [ZAM_Div]
-    | Elim.Eq (e0, e1) -> (f env e1) @ (f env e0) @ [ZAM_Eq]
-    | Elim.Ne (e0, e1) -> (f env e1) @ (f env e0) @ [ZAM_Eq; ZAM_Not]
-    | Elim.Gt (e0, e1) -> (f env e1) @ (f env e0) @ [ZAM_Gt]
-    | Elim.Le (e0, e1) -> (f env e1) @ (f env e0) @ [ZAM_Le]
-    | Elim.Not e0 -> (f env e0) @ [ZAM_Not]
-    | Elim.Neg e0 -> (f env e0) @ [ZAM_Neg]
+    | Untyped.Add (e0, e1) -> (f env e1) @ (f env e0) @ [ZAM_Add]
+    | Untyped.Sub (e0, e1) -> (f env e1) @ (f env e0) @ [ZAM_Sub]
+    | Untyped.Mul (e0, e1) -> (f env e1) @ (f env e0) @ [ZAM_Mul]
+    | Untyped.Div (e0, e1) -> (f env e1) @ (f env e0) @ [ZAM_Div]
+    | Untyped.Eq (e0, e1) -> (f env e1) @ (f env e0) @ [ZAM_Eq]
+    | Untyped.Ne (e0, e1) -> (f env e1) @ (f env e0) @ [ZAM_Eq; ZAM_Not]
+    | Untyped.Gt (e0, e1) -> (f env e1) @ (f env e0) @ [ZAM_Gt]
+    | Untyped.Le (e0, e1) -> (f env e1) @ (f env e0) @ [ZAM_Le]
+    | Untyped.Not e0 -> (f env e0) @ [ZAM_Not]
+    | Untyped.Neg e0 -> (f env e0) @ [ZAM_Neg]
     | _ ->
       unknown ()
 
   and g env = function
-    | Elim.Var _ | Elim.Int _ | Elim.Bool _ | Elim.Unit
-    | Elim.Add _ | Elim.Sub _ | Elim.Mul _ | Elim.Div _
-    | Elim.Eq  _ | Elim.Ne  _ | Elim.Gt  _ | Elim.Le  _  as e0 ->
+    | Untyped.Var _ | Untyped.Int _ | Untyped.Bool _ | Untyped.Unit
+    | Untyped.Add _ | Untyped.Sub _ | Untyped.Mul _ | Untyped.Div _
+    | Untyped.Eq  _ | Untyped.Ne  _ | Untyped.Gt  _ | Untyped.Le  _  as e0 ->
       (f env e0) @ [ZAM_Ret]
-    | Elim.If (e0, e1, e2) ->
+    | Untyped.If (e0, e1, e2) ->
       (f env e0) @ [ZAM_Test (g env e1, g env e2)]
-    | Elim.LetRec (x0, x1 :: xs0, e0, e1) ->
-      let e0' = List.fold_right (fun x -> fun e -> Elim.Fun (x, e)) xs0 e0 in
+    | Untyped.LetRec (x0, x1 :: xs0, e0, e1) ->
+      let e0' = List.fold_right (fun x -> fun e -> Untyped.Fun (x, e)) xs0 e0 in
       let env0 = x0 :: env in
       let env1 = x1 :: env0 in
       [ZAM_Closure (g env1 e0'); ZAM_Let] @ (g env0 e1)
-    | Elim.Let (x0, e0, e1) ->
+    | Untyped.Let (x0, e0, e1) ->
       (f env e0) @ [ZAM_Let] @ (g (x0 :: env) e1)
-    | Elim.Fun (x0, e0) ->
+    | Untyped.Fun (x0, e0) ->
       ZAM_Grab :: (g (x0 :: Fresh.f () :: env) e0)
-    | Elim.App _ as e0 ->
+    | Untyped.App _ as e0 ->
       (h env e0) @ [ZAM_TailApp]
     | _ ->
       unknown ()
 
   and h env = function
-    | Elim.App (e0, e1) -> begin
+    | Untyped.App (e0, e1) -> begin
         match e0 with
-        | Elim.App _ -> f env e1 @ h env e0
-        | _          -> f env e1 @ f env e0
+        | Untyped.App _ -> f env e1 @ h env e0
+        | _             -> f env e1 @ f env e0
       end
     | _ ->
       unknown ()

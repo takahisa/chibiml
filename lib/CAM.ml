@@ -78,46 +78,46 @@ let rec address env x =
   | y :: env' -> if (x = y) then 0 else 1 + address env' x
 
 let rec compile env = function
-  | Elim.Var x0 ->
+  | Untyped.Var x0 ->
     [CAM_Acc (address env x0)]
-  | Elim.Int n0 ->
+  | Untyped.Int n0 ->
     [CAM_Ldi n0]
-  | Elim.Bool b0 ->
+  | Untyped.Bool b0 ->
     [CAM_Ldb b0]
-  | Elim.Unit ->
+  | Untyped.Unit ->
     [CAM_Ldi 0]
-  | Elim.Fun (x0, e0) ->
+  | Untyped.Fun (x0, e0) ->
     [CAM_Closure (compile (x0 :: Fresh.f () :: env) e0 @ [CAM_Ret])]
-  | Elim.LetRec (x0, x1 :: xs0, e0, e1) ->
-    let e0' = List.fold_right (fun x -> fun e -> Elim.Fun (x, e)) xs0 e0 in
+  | Untyped.LetRec (x0, x1 :: xs0, e0, e1) ->
+    let e0' = List.fold_right (fun x -> fun e -> Untyped.Fun (x, e)) xs0 e0 in
     let env0 = x0 :: env in
     let env1 = x1 :: env0 in
     [CAM_Closure ((compile env1 e0') @ [CAM_Ret])] @ [CAM_Let] @ (compile env0 e1) @ [CAM_End]
-  | Elim.LetRec (x0, [], e0, e1) | Elim.Let (x0, e0, e1) ->
+  | Untyped.LetRec (x0, [], e0, e1) | Untyped.Let (x0, e0, e1) ->
     (compile env e0) @ [CAM_Let] @ (compile (x0 :: env) e1) @ [CAM_End]
-  | Elim.If (e0, e1, e2) ->
+  | Untyped.If (e0, e1, e2) ->
     (compile env e0) @ [CAM_Test ((compile env e1), (compile env e2))]
-  | Elim.App (e0, v1) ->
+  | Untyped.App (e0, v1) ->
     (compile env v1) @ (compile env e0) @ [CAM_App]
-  | Elim.Add (e0, v1) ->
+  | Untyped.Add (e0, v1) ->
     (compile env v1) @ (compile env e0) @ [CAM_Add]
-  | Elim.Sub (e0, v1) ->
+  | Untyped.Sub (e0, v1) ->
     (compile env v1) @ (compile env e0) @ [CAM_Sub]
-  | Elim.Mul (e0, v1) ->
+  | Untyped.Mul (e0, v1) ->
     (compile env v1) @ (compile env e0) @ [CAM_Mul]
-  | Elim.Div (e0, v1) ->
+  | Untyped.Div (e0, v1) ->
     (compile env v1) @ (compile env e0) @ [CAM_Div]
-  | Elim.Eq (e0, v1) ->
+  | Untyped.Eq (e0, v1) ->
     (compile env v1) @ (compile env e0) @ [CAM_Eq]
-  | Elim.Ne (e0, v1) ->
+  | Untyped.Ne (e0, v1) ->
     (compile env v1) @ (compile env e0) @ [CAM_Eq; CAM_Not]
-  | Elim.Gt (e0, v1) ->
+  | Untyped.Gt (e0, v1) ->
     (compile env v1) @ (compile env e0) @ [CAM_Gt]
-  | Elim.Le (e0, v1) ->
+  | Untyped.Le (e0, v1) ->
     (compile env v1) @ (compile env e0) @ [CAM_Le]
-  | Elim.Not e0 ->
+  | Untyped.Not e0 ->
     (compile env e0) @ [CAM_Not]
-  | Elim.Neg e0 ->
+  | Untyped.Neg e0 ->
     (compile env e0) @ [CAM_Neg]
 let compile e = compile [] e
 
