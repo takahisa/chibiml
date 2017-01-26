@@ -56,3 +56,7 @@ include Syntax.S with type exp := exp
 
 val pp_term: term -> string
 val pp_cont: cont -> string
+
+val rename_exp: (var, var) Env.t -> exp -> exp
+val rename_term: (var, var) Env.t -> term -> term
+val rename_cont: (var, var) Env.t -> cont -> cont

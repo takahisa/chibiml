@@ -261,3 +261,77 @@ and pp_cont = function
   | Cont (x0, e0) ->
     Printf.sprintf "(fun _%d -> %s)"
       x0 (pp_exp e0)
+
+and rename_exp env = function
+  | LetRec (x0, xs0, x1, e0, e1) ->
+    let x0' = Fresh.f () in
+    let x1' = Fresh.f () in
+    let xs0' = List.map (fun _ -> Fresh.f ()) xs0 in
+    let env0 = Env.extend x0 x0' env in
+    let env1 = Env.extend x1 x1' env in
+    let env2 = List.fold_right begin fun (x, y) -> fun env ->
+        Env.extend x y env
+      end (List.combine xs0 xs0') env1 in
+    LetRec (x0', xs0', x1', rename_exp env2 e0, rename_exp env0 e1)
+  | Let (x0, Cont (x1, e0), e1) ->
+    let x0' = Fresh.f () in
+    let x1' = Fresh.f () in
+    let env0 = Env.extend x0 x0' env in
+    let env1 = Env.extend x1 x1' env in
+    Let (x0', Cont (x1', rename_exp env1 e0), rename_exp env0 e1)
+  | If (v0, e0, e1) ->
+    If (rename_term env v0, rename_exp env e0, rename_exp env e1)
+  | App (v0, v1, Cont (x0, e0)) ->
+    let x0' = Fresh.f () in
+    App (rename_term env v0, rename_term env v1, Cont (x0', rename_exp (Env.extend x0 x0' env) e0))
+  | Add (v0, v1, Cont (x0, e0)) ->
+    let x0' = Fresh.f () in
+    Add (rename_term env v0, rename_term env v1, Cont (x0', rename_exp (Env.extend x0 x0' env) e0))
+  | Sub (v0, v1, Cont (x0, e0)) ->
+    let x0' = Fresh.f () in
+    Sub (rename_term env v0, rename_term env v1, Cont (x0', rename_exp (Env.extend x0 x0' env) e0))
+  | Mul (v0, v1, Cont (x0, e0)) ->
+    let x0' = Fresh.f () in
+    Mul (rename_term env v0, rename_term env v1, Cont (x0', rename_exp (Env.extend x0 x0' env) e0))
+  | Div (v0, v1, Cont (x0, e0)) ->
+    let x0' = Fresh.f () in
+    Div (rename_term env v0, rename_term env v1, Cont (x0', rename_exp (Env.extend x0 x0' env) e0))
+  | Gt (v0, v1, Cont (x0, e0)) ->
+    let x0' = Fresh.f () in
+    Gt (rename_term env v0, rename_term env v1, Cont (x0', rename_exp (Env.extend x0 x0' env) e0))
+  | Le (v0, v1, Cont (x0, e0)) ->
+    let x0' = Fresh.f () in
+    Le (rename_term env v0, rename_term env v1, Cont (x0', rename_exp (Env.extend x0 x0' env) e0))
+  | Eq (v0, v1, Cont (x0, e0)) ->
+    let x0' = Fresh.f () in
+    Eq (rename_term env v0, rename_term env v1, Cont (x0', rename_exp (Env.extend x0 x0' env) e0))
+  | Ne (v0, v1, Cont (x0, e0)) ->
+    let x0' = Fresh.f () in
+    Ne (rename_term env v0, rename_term env v1, Cont (x0', rename_exp (Env.extend x0 x0' env) e0))
+  | Not (v0, Cont (x0, e0)) ->
+    let x0' = Fresh.f () in
+    Not (rename_term env v0, Cont (x0', rename_exp (Env.extend x0 x0' env) e0))
+  | Neg (v0, Cont (x0, e0)) ->
+    let x0' = Fresh.f () in
+    Not (rename_term env v0, Cont (x0', rename_exp (Env.extend x0 x0' env) e0))
+  | Ret (x0, v0) ->
+    let x0' = Fresh.f () in
+    Ret (x0', rename_term (Env.extend x0 x0' env) v0)
+
+and rename_term env = function
+  | Fun (x0, x1, e0) ->
+    let x0' = Fresh.f () in
+    let x1' = Fresh.f () in
+    let env0 = Env.extend x0 x0' env in
+    let env1 = Env.extend x1 x1' env0 in
+    Fun (x0', x1', rename_exp env1 e0)
+  | Var x0 when Env.mem x0 env ->
+    Var (Env.lookup x0 env)
+  | Var x0 ->
+    error ~message:(Printf.sprintf "unbound variable _%d" x0) ~at:nowhere
+  | v0 -> v0
+
+and rename_cont env = function
+  | Cont (x0, e0) ->
+    let x0' = Fresh.f () in
+    Cont (x0', rename_exp (Env.extend x0 x0' env) e0)
