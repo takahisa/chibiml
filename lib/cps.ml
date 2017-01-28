@@ -209,38 +209,38 @@ let rec pp_exp = function
     Printf.sprintf "(if %s then %s else %s)"
       (pp_term v0) (pp_exp e0) (pp_exp e1)
   | App (v0, v1, c0) ->
-    Printf.sprintf "(%s %s) |> %s"
-      (pp_term v0) (pp_term v1) (pp_cont c0)
+    Printf.sprintf "%s (%s %s)"
+      (pp_cont c0) (pp_term v0) (pp_term v1)
   | Add (v0, v1, c0) ->
-    Printf.sprintf "(%s + %s) |> %s"
-      (pp_term v0) (pp_term v1) (pp_cont c0)
+    Printf.sprintf "%s (%s + %s)"
+      (pp_cont c0) (pp_term v0) (pp_term v1)
   | Sub (v0, v1, c0) ->
-    Printf.sprintf "(%s - %s) |> %s"
-      (pp_term v0) (pp_term v1) (pp_cont c0)
+    Printf.sprintf "%s (%s - %s)"
+      (pp_cont c0) (pp_term v0) (pp_term v1)
   | Mul (v0, v1, c0) ->
-    Printf.sprintf "(%s * %s) |> %s"
-      (pp_term v0) (pp_term v1) (pp_cont c0)
+    Printf.sprintf "%s (%s * %s)"
+      (pp_cont c0) (pp_term v0) (pp_term v1)
   | Div (v0, v1, c0) ->
-    Printf.sprintf "(%s / %s) |> %s"
-      (pp_term v0) (pp_term v1) (pp_cont c0)
+    Printf.sprintf "%s (%s / %s)"
+      (pp_cont c0) (pp_term v0) (pp_term v1)
   | Eq (v0, v1, c0) ->
-    Printf.sprintf "(%s = %s) |> %s"
-      (pp_term v0) (pp_term v1) (pp_cont c0)
+    Printf.sprintf "%s (%s = %s)"
+      (pp_cont c0) (pp_term v0) (pp_term v1)
   | Ne (v0, v1, c0) ->
-    Printf.sprintf "(%s <> %s) |> %s"
-      (pp_term v0) (pp_term v1) (pp_cont c0)
+    Printf.sprintf "%s (%s <> %s)"
+      (pp_cont c0) (pp_term v0) (pp_term v1)
   | Gt (v0, v1, c0) ->
-    Printf.sprintf "(%s > %s) |> %s"
-      (pp_term v0) (pp_term v1) (pp_cont c0)
+    Printf.sprintf "%s (%s > %s)"
+      (pp_cont c0) (pp_term v0) (pp_term v1)
   | Le (v0, v1, c0) ->
-    Printf.sprintf "(%s < %s) |> %s"
-      (pp_term v0) (pp_term v1) (pp_cont c0)
+    Printf.sprintf "%s (%s < %s)"
+      (pp_cont c0) (pp_term v0) (pp_term v1)
   | Not (v0, c0) ->
-    Printf.sprintf "(not %s) |> %s"
-      (pp_term v0) (pp_cont c0)
+    Printf.sprintf "%s (not %s)"
+      (pp_cont c0) (pp_term v0)
   | Neg (v0, c0) ->
-    Printf.sprintf "(- %s) |> %s"
-      (pp_term v0) (pp_cont c0)
+    Printf.sprintf "%s (- %s)"
+      (pp_cont c0) (pp_term v0)
   | Ret (x0, v0) ->
     Printf.sprintf "_%d %s" x0 (pp_term v0)
 
