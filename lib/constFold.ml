@@ -22,19 +22,17 @@
  *)
 open Cps
 
-let rec const_b x env =
+let const_b x env =
   try
     match Env.lookup x env with
-    | Var x0  -> const_b x0 env
     | Bool b0 -> Some b0
     | _       -> None
   with
     _ -> None
 
-let rec const_i x env =
+let const_i x env =
   try
     match Env.lookup x env with
-    | Var x0 -> const_i x0 env
     | Int n0 -> Some n0
     | _      -> None
   with
@@ -137,12 +135,9 @@ let rec fold_exp env = function
        Neg (x0, Cont (x1, fold_exp env e0)))
   | e0 -> e0
 
-
 and fold_term env = function
   | Fun (x0, x1, e0) ->
     Fun (x0, x1, fold_exp env e0)
-  | Var x0 when Env.mem x0 env ->
-    Env.lookup x0 env
   | v0 -> v0
 
 and fold_cont env = function

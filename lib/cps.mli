@@ -40,9 +40,9 @@ type exp =
   | Not    of var * cont
   | Neg    of var * cont
   | Ret    of var * var
+  | Var    of var
 and term =
   | Fun    of var * var * exp
-  | Var    of var
   | Int    of int
   | Bool   of bool
   | Unit

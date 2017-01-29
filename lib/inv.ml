@@ -60,14 +60,12 @@ let rec inv_exp e (k: Cps.var) =
     Let (x1, Neg (Var x0), inv_exp e0 k)
   | Cps.Ret (x0, x1) when k = x0 ->
     Var x1
-  | Cps.Ret (x0, x1) ->
-    App (Var x0, Var x1)
+  | Cps.Ret (_, x0) | Cps.Var x0 ->
+    Var x0
 
 and inv_term = function
   | Cps.Fun (x0, x1, e0) ->
     Fun (x0, inv_exp e0 x1)
-  | Cps.Var x0 ->
-    Var x0
   | Cps.Int n0 ->
     Int n0
   | Cps.Bool b0 ->

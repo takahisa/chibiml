@@ -40,9 +40,9 @@ type exp =
   | Not    of var * cont
   | Neg    of var * cont
   | Ret    of var * var
+  | Var    of var
 and term =
   | Fun    of var * var * exp
-  | Var    of var
   | Int    of int
   | Bool   of bool
   | Unit
@@ -97,13 +97,13 @@ let rec pp_exp = function
   | Ret (x0, x1) ->
     Printf.sprintf "%s %s"
       (pp_var x0) (pp_var x1)
+  | Var x0 ->
+    pp_var x0
 
 and pp_term = function
   | Fun (x0, x1, e0) ->
     Printf.sprintf "(fun %s %s -> %s)"
       (pp_var x0) (pp_var x1) (pp_exp e0)
-  | Var x0 ->
-    pp_var x0
   | Int n0 ->
     string_of_int n0
   | Bool b0 ->
@@ -208,6 +208,9 @@ let rec rename_exp env e =
     let x0' = Env.lookup x0 env in
     let x1' = Env.lookup x1 env in
     Ret (x0', x1')
+  | Var x0 ->
+    Var (Env.lookup x0 env)
+
 
 and rename_term env = function
   | Fun (x0, x1, e0) ->
@@ -217,8 +220,6 @@ and rename_term env = function
     let env1 = Env.extend x1 x1' env0 in
     let e0' = rename_exp env1 e0 in
     Fun (x0', x1', e0')
-  | Var x0 ->
-    Var (Env.lookup x0 env)
   | v0 -> v0
 
 and rename_cont env = function
@@ -367,7 +368,12 @@ and g env e (k: var -> exp) =
             Ne (x0, x1, gen_cont k)))
   | Alpha.If (e0, e1, e2) ->
     g env e0 (fun x0 ->
-        If (x0, g env e1 k, g env e2 k))
+        let x1 = Fresh.f () in
+        let x2 = Fresh.f () in
+        gen_let (Fun (x1, x2, (k x1))) (fun x3 ->
+            If (x0,
+                g env e1 (fun x4 -> App (x3, x4, gen_cont (fun x5 -> Var x5))),
+                g env e2 (fun x4 -> App (x3, x4, gen_cont (fun x5 -> Var x5))))))
   | Alpha.Not e0 ->
     g env e0 (fun x0 ->
         Not (x0, gen_cont k))
