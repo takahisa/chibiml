@@ -21,7 +21,5 @@
  * THE SOFTWARE.
  *)
 open Cps
-val const_i: (var, term) Env.t -> term -> int option
-val const_b: (var, term) Env.t -> term -> bool option
 
 val f: cont -> cont

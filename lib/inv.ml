@@ -28,36 +28,40 @@ let rec inv_exp e (k: Cps.var) =
     let e0' = inv_exp e0 x1 in
     let e1' = inv_exp e1 k in
     LetRec (x0, xs0, e0', e1')
-  | Cps.Let (x0, Cps.Cont (x1, e0), e1) ->
-    Let (x0, Fun (x1, inv_exp e0 k), inv_exp e1 k)
-  | Cps.If (v0, e0, e1) ->
-    If (inv_term v0, inv_exp e0 k, inv_exp e1 k)
-  | Cps.App (v0, v1, Cps.Cont (x0, e0)) ->
-    Let (x0, App (inv_term v0, inv_term v1), inv_exp e0 k)
-  | Cps.Add (v0, v1, Cps.Cont (x0, e0)) ->
-    Let (x0, Add (inv_term v0, inv_term v1), inv_exp e0 k)
-  | Cps.Sub (v0, v1, Cps.Cont (x0, e0)) ->
-    Let (x0, Sub (inv_term v0, inv_term v1), inv_exp e0 k)
-  | Cps.Mul (v0, v1, Cps.Cont (x0, e0)) ->
-    Let (x0, Mul (inv_term v0, inv_term v1), inv_exp e0 k)
-  | Cps.Div (v0, v1, Cps.Cont (x0, e0)) ->
-    Let (x0, Div (inv_term v0, inv_term v1), inv_exp e0 k)
-  | Cps.Gt (v0, v1, Cps.Cont (x0, e0)) ->
-    Let (x0, Gt (inv_term v0, inv_term v1), inv_exp e0 k)
-  | Cps.Le (v0, v1, Cps.Cont (x0, e0)) ->
-    Let (x0, Le (inv_term v0, inv_term v1), inv_exp e0 k)
-  | Cps.Eq (v0, v1, Cps.Cont (x0, e0)) ->
-    Let (x0, Eq (inv_term v0, inv_term v1), inv_exp e0 k)
-  | Cps.Ne (v0, v1, Cps.Cont (x0, e0)) ->
-    Let (x0, Ne (inv_term v0, inv_term v1), inv_exp e0 k)
-  | Cps.Not (v0, Cps.Cont (x0, e0)) ->
-    Let (x0, Not (inv_term v0), inv_exp e0 k)
-  | Cps.Neg (v0, Cps.Cont (x0, e0)) ->
-    Let (x0, Neg (inv_term v0), inv_exp e0 k)
-  | Cps.Ret (x0, v0) when k = x0 ->
-    inv_term v0
-  | Cps.Ret (x0, v0) ->
-    App (Var x0, inv_term v0)
+  | Cps.Let (x0, v0, e1) ->
+    let e0' = inv_term v0 in
+    let e1' = inv_exp e1 k in
+    Let (x0, e0', e1')
+  | Cps.If (x0, e0, e1) ->
+    let e0' = inv_exp e0 k in
+    let e1' = inv_exp e1 k in
+    If (Var x0, e0', e1')
+  | Cps.App (x0, x1, Cps.Cont (x2, e0)) ->
+    Let (x2, App (Var x0, Var x1), inv_exp e0 k)
+  | Cps.Add (x0, x1, Cps.Cont (x2, e0)) ->
+    Let (x2, Add (Var x0, Var x1), inv_exp e0 k)
+  | Cps.Sub (x0, x1, Cps.Cont (x2, e0)) ->
+    Let (x2, Sub (Var x0, Var x1), inv_exp e0 k)
+  | Cps.Mul (x0, x1, Cps.Cont (x2, e0)) ->
+    Let (x2, Mul (Var x0, Var x1), inv_exp e0 k)
+  | Cps.Div (x0, x1, Cps.Cont (x2, e0)) ->
+    Let (x2, Div (Var x0, Var x1), inv_exp e0 k)
+  | Cps.Gt (x0, x1, Cps.Cont (x2, e0)) ->
+    Let (x2, Gt (Var x0, Var x1), inv_exp e0 k)
+  | Cps.Le (x0, x1, Cps.Cont (x2, e0)) ->
+    Let (x2, Le (Var x0, Var x1), inv_exp e0 k)
+  | Cps.Eq (x0, x1, Cps.Cont (x2, e0)) ->
+    Let (x2, Eq (Var x0, Var x1), inv_exp e0 k)
+  | Cps.Ne (x0, x1, Cps.Cont (x2, e0)) ->
+    Let (x2, Ne (Var x0, Var x1), inv_exp e0 k)
+  | Cps.Not (x0, Cps.Cont (x1, e0)) ->
+    Let (x1, Not (Var x0), inv_exp e0 k)
+  | Cps.Neg (x0, Cps.Cont (x1, e0)) ->
+    Let (x1, Neg (Var x0), inv_exp e0 k)
+  | Cps.Ret (x0, x1) when k = x0 ->
+    Var x1
+  | Cps.Ret (x0, x1) ->
+    App (Var x0, Var x1)
 
 and inv_term = function
   | Cps.Fun (x0, x1, e0) ->
@@ -72,7 +76,11 @@ and inv_term = function
     Unit
 
 and inv_cont = function
-  | Cps.Cont (x0, e0) -> inv_exp e0 x0
+  | Cps.Cont (x0, e0) ->
+    inv_exp e0 x0
 
 let f cont =
   inv_cont cont
+
+let pp_tpe = Untyped.pp_tpe
+let pp_exp = Untyped.pp_exp

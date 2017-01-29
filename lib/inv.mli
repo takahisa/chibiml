@@ -21,3 +21,6 @@
  * THE SOFTWARE.
  *)
 val f: Cps.cont -> Untyped.exp
+
+val pp_tpe: Untyped.tpe -> string
+val pp_exp: Untyped.exp -> string
