@@ -446,6 +446,9 @@ and pp_cont = function
     Printf.sprintf "(fun %s -> %s)"
       (pp_var x0) (pp_exp e0)
 
+let rename_var env x =
+  if Env.mem x env then Env.lookup x env else x
+
 let rec rename_exp env e =
   match e with
   | LetRec (x0, x1, x2, e0, e1) ->
@@ -464,80 +467,80 @@ let rec rename_exp env e =
     let e0' = rename_exp (Env.extend x0 x0' env) e0 in
     Let (x0', v0', e0')
   | If (x0, e0, e1) ->
-    let x0' = Env.lookup x0 env in
+    let x0' = rename_var env x0 in
     let e0' = rename_exp env e0 in
     let e1' = rename_exp env e1 in
     If (x0', e0', e1')
   | App (x0, x1, Cont (x2, e0)) ->
-    let x0' = Env.lookup x0 env in
-    let x1' = Env.lookup x1 env in
+    let x0' = rename_var env x0 in
+    let x1' = rename_var env x1 in
     let x2' = Fresh.f () in
     let e0' = rename_exp (Env.extend x2 x2' env) e0 in
     App (x0', x1', Cont (x2', e0'))
   | Add (x0, x1, Cont (x2, e0)) ->
-    let x0' = Env.lookup x0 env in
-    let x1' = Env.lookup x1 env in
+    let x0' = rename_var env x0 in
+    let x1' = rename_var env x1 in
     let x2' = Fresh.f () in
     let e0' = rename_exp (Env.extend x2 x2' env) e0 in
     Add (x0', x1', Cont (x2', e0'))
   | Sub (x0, x1, Cont (x2, e0)) ->
-    let x0' = Env.lookup x0 env in
-    let x1' = Env.lookup x1 env in
+    let x0' = rename_var env x0 in
+    let x1' = rename_var env x1 in
     let x2' = Fresh.f () in
     let e0' = rename_exp (Env.extend x2 x2' env) e0 in
     Sub (x0', x1', Cont (x2', e0'))
   | Mul (x0, x1, Cont (x2, e0)) ->
-    let x0' = Env.lookup x0 env in
-    let x1' = Env.lookup x1 env in
+    let x0' = rename_var env x0 in
+    let x1' = rename_var env x1 in
     let x2' = Fresh.f () in
     let e0' = rename_exp (Env.extend x2 x2' env) e0 in
     Mul (x0', x1', Cont (x2', e0'))
   | Div (x0, x1, Cont (x2, e0)) ->
-    let x0' = Env.lookup x0 env in
-    let x1' = Env.lookup x1 env in
+    let x0' = rename_var env x0 in
+    let x1' = rename_var env x1 in
     let x2' = Fresh.f () in
     let e0' = rename_exp (Env.extend x2 x2' env) e0 in
     Div (x0', x1', Cont (x2', e0'))
   | Gt (x0, x1, Cont (x2, e0)) ->
-    let x0' = Env.lookup x0 env in
-    let x1' = Env.lookup x1 env in
+    let x0' = rename_var env x0 in
+    let x1' = rename_var env x1 in
     let x2' = Fresh.f () in
     let e0' = rename_exp (Env.extend x2 x2' env) e0 in
     Gt (x0', x1', Cont (x2', e0'))
   | Le (x0, x1, Cont (x2, e0)) ->
-    let x0' = Env.lookup x0 env in
-    let x1' = Env.lookup x1 env in
+    let x0' = rename_var env x0 in
+    let x1' = rename_var env x1 in
     let x2' = Fresh.f () in
     let e0' = rename_exp (Env.extend x2 x2' env) e0 in
     Le (x0', x1', Cont (x2', e0'))
   | Eq (x0, x1, Cont (x2, e0)) ->
-    let x0' = Env.lookup x0 env in
-    let x1' = Env.lookup x1 env in
+    let x0' = rename_var env x0 in
+    let x1' = rename_var env x1 in
     let x2' = Fresh.f () in
     let e0' = rename_exp (Env.extend x2 x2' env) e0 in
     Eq (x0', x1', Cont (x2', e0'))
   | Ne (x0, x1, Cont (x2, e0)) ->
-    let x0' = Env.lookup x0 env in
-    let x1' = Env.lookup x1 env in
+    let x0' = rename_var env x0 in
+    let x1' = rename_var env x1 in
     let x2' = Fresh.f () in
     let e0' = rename_exp (Env.extend x2 x2' env) e0 in
     Ne (x0', x1', Cont (x2', e0'))
   | Not (x0, Cont (x1, e0)) ->
-    let x0' = Env.lookup x0 env in
+    let x0' = rename_var env x0 in
     let x1' = Fresh.f () in
     let e0' = rename_exp (Env.extend x1 x1' env) e0 in
     Not (x0', Cont (x1', e0'))
   | Neg (x0, Cont (x1, e0)) ->
-    let x0' = Env.lookup x0 env in
+    let x0' = rename_var env x0 in
     let x1' = Fresh.f () in
     let e0' = rename_exp (Env.extend x1 x1' env) e0 in
     Neg (x0', Cont (x1', e0'))
   | Ret (x0, x1) ->
-    let x0' = Env.lookup x0 env in
-    let x1' = Env.lookup x1 env in
+    let x0' = rename_var env x0 in
+    let x1' = rename_var env x1 in
     Ret (x0', x1')
   | Var x0 ->
-    Var (Env.lookup x0 env)
+    Var (rename_var env x0)
 
 and rename_term env = function
   | Fun (x0, x1, e0) ->

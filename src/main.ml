@@ -51,10 +51,16 @@ struct
   type tpe = Alpha.tpe
   type value = CAM.value
 
+  let optimize_level = ref 15
+  let optimize cont =
+    let rec f cont n =
+      if n <= 0 then cont else f (ConstFold.f (Inline.f cont)) (n - 1)
+    in f cont (!optimize_level)
+
   let run e =
     let e0 = Alpha.f e in
     let t0 = Typing.f e0 in
-    let v0 = CAM.run (CAM.compile (Inv.f (ConstFold.f (Cps.f e0)))) in
+    let v0 = CAM.run (CAM.compile (Inv.f (optimize (Cps.f e0)))) in
     (e0, t0, v0)
 
   let pp_exp = Alpha.pp_exp
@@ -68,10 +74,16 @@ struct
   type tpe = Alpha.tpe
   type value = ZAM.value
 
+  let optimize_level = ref 5
+  let optimize cont =
+    let rec f cont n =
+      if n <= 0 then cont else f (ConstFold.f (Inline.f cont)) (n - 1)
+    in f cont (!optimize_level)
+
   let run e =
     let e0 = Alpha.f e in
     let t0 = Typing.f e0 in
-    let v0 = ZAM.run (ZAM.compile (Inv.f (ConstFold.f (Cps.f e0)))) in
+    let v0 = ZAM.run (ZAM.compile (Inv.f (optimize (Cps.f e0)))) in
     (e0, t0, v0)
 
   let pp_exp = Alpha.pp_exp
