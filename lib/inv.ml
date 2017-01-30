@@ -24,10 +24,10 @@ open Untyped
 
 let rec inv_exp e (k: Cps.var) =
   match e with
-  | Cps.LetRec (x0, xs0, x1, e0, e1) ->
-    let e0' = inv_exp e0 x1 in
+  | Cps.LetRec (x0, x1, x2, e0, e1) ->
+    let e0' = inv_exp e0 x2 in
     let e1' = inv_exp e1 k in
-    LetRec (x0, xs0, e0', e1')
+    LetRec (x0, x1, e0', e1')
   | Cps.Let (x0, v0, e1) ->
     let e0' = inv_term v0 in
     let e1' = inv_exp e1 k in

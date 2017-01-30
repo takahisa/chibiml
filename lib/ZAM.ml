@@ -100,11 +100,10 @@ let compile e =
       [ZAM_Ldi 0]
     | Untyped.If (e0, e1, e2) ->
       (f env e0) @ [ZAM_Test (f env e1, f env e2)]
-    | Untyped.LetRec (x0, x1 :: xs0, e0, e1) ->
-      let e0' = List.fold_right (fun x -> fun e -> Untyped.Fun (x, e)) xs0 e0 in
+    | Untyped.LetRec (x0, x1, e0, e1) ->
       let env0 = x0 :: env in
       let env1 = x1 :: env0 in
-      [ZAM_Closure (g env1 e0'); ZAM_Let] @ (f env0 e1) @ [ZAM_End]
+      [ZAM_Closure (g env1 e0); ZAM_Let] @ (f env0 e1) @ [ZAM_End]
     | Untyped.Let (x0, e0, e1) ->
       (f env e0) @ [ZAM_Let] @ (f (x0 :: env) e1) @ [ZAM_End]
     | Untyped.Fun (x0, e0) ->
@@ -121,8 +120,6 @@ let compile e =
     | Untyped.Le (e0, e1) -> (f env e1) @ (f env e0) @ [ZAM_Le]
     | Untyped.Not e0 -> (f env e0) @ [ZAM_Not]
     | Untyped.Neg e0 -> (f env e0) @ [ZAM_Neg]
-    | _ ->
-      unknown ()
 
   and g env = function
     | Untyped.Var _ | Untyped.Int _ | Untyped.Bool _ | Untyped.Unit
@@ -131,11 +128,10 @@ let compile e =
       (f env e0) @ [ZAM_Ret]
     | Untyped.If (e0, e1, e2) ->
       (f env e0) @ [ZAM_Test (g env e1, g env e2)]
-    | Untyped.LetRec (x0, x1 :: xs0, e0, e1) ->
-      let e0' = List.fold_right (fun x -> fun e -> Untyped.Fun (x, e)) xs0 e0 in
+    | Untyped.LetRec (x0, x1, e0, e1) ->
       let env0 = x0 :: env in
       let env1 = x1 :: env0 in
-      [ZAM_Closure (g env1 e0'); ZAM_Let] @ (g env0 e1)
+      [ZAM_Closure (g env1 e0); ZAM_Let] @ (g env0 e1)
     | Untyped.Let (x0, e0, e1) ->
       (f env e0) @ [ZAM_Let] @ (g (x0 :: env) e1)
     | Untyped.Fun (x0, e0) ->

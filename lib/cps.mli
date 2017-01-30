@@ -25,7 +25,7 @@ open Source
 type var = Alpha.var
 type tpe = Type.t
 type exp =
-  | LetRec of var * var list * var * exp * exp
+  | LetRec of var * var * var * exp * exp
   | Let    of var * term * exp
   | If     of var * exp * exp
   | App    of var * var * cont

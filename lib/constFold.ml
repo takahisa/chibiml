@@ -39,10 +39,10 @@ let const_i x env =
     _ -> None
 
 let rec fold_exp env = function
-  | LetRec (x0, xs0, x1, e0, e1) ->
+  | LetRec (x0, x1, x2, e0, e1) ->
     let e0' = fold_exp env e0 in
     let e1' = fold_exp env e1 in
-    LetRec (x0, xs0, x1, e0', e1')
+    LetRec (x0, x1, x2, e0', e1')
   | Let (x0, v0, e0) ->
     let v0' = fold_term env v0 in
     let e0' = fold_exp (Env.extend x0 v0' env) e0 in

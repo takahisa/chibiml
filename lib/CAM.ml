@@ -88,12 +88,11 @@ let rec compile env = function
     [CAM_Ldi 0]
   | Untyped.Fun (x0, e0) ->
     [CAM_Closure (compile (x0 :: Fresh.f () :: env) e0 @ [CAM_Ret])]
-  | Untyped.LetRec (x0, x1 :: xs0, e0, e1) ->
-    let e0' = List.fold_right (fun x -> fun e -> Untyped.Fun (x, e)) xs0 e0 in
+  | Untyped.LetRec (x0, x1, e0, e1) ->
     let env0 = x0 :: env in
     let env1 = x1 :: env0 in
-    [CAM_Closure ((compile env1 e0') @ [CAM_Ret])] @ [CAM_Let] @ (compile env0 e1) @ [CAM_End]
-  | Untyped.LetRec (x0, [], e0, e1) | Untyped.Let (x0, e0, e1) ->
+    [CAM_Closure ((compile env1 e0) @ [CAM_Ret])] @ [CAM_Let] @ (compile env0 e1) @ [CAM_End]
+  | Untyped.Let (x0, e0, e1) ->
     (compile env e0) @ [CAM_Let] @ (compile (x0 :: env) e1) @ [CAM_End]
   | Untyped.If (e0, e1, e2) ->
     (compile env e0) @ [CAM_Test ((compile env e1), (compile env e2))]

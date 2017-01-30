@@ -29,7 +29,7 @@ type exp  =
   | Int    of int
   | Bool   of bool
   | Unit
-  | LetRec of var * var list * exp * exp
+  | LetRec of var * var * exp * exp
   | Let    of var * exp * exp
   | Fun    of var * exp
   | App    of exp * exp
@@ -60,9 +60,9 @@ let rec pp_exp e =
     string_of_bool b0
   | Unit ->
     "()"
-  | LetRec (x0, xs0, e0, e1) ->
+  | LetRec (x0, x1, e0, e1) ->
     Printf.sprintf "let rec %s %s = %s in %s"
-      (pp_var x0) (String.concat " " @@ List.map pp_var xs0) (pp_exp e0) (pp_exp e1)
+      (pp_var x0) (pp_var x1) (pp_exp e0) (pp_exp e1)
   | Let (x0, e0, e1) ->
     Printf.sprintf "let %s = %s in %s"
       (pp_var x0) (pp_exp e0) (pp_exp e1)
@@ -116,9 +116,9 @@ let rec f e =
     Bool b0
   | Alpha.Unit ->
     Unit
-  | Alpha.LetRec ((x0, _), xts0, e0, e1) ->
-    LetRec (x0, List.map fst xts0, f e0, f e1)
-  | Alpha.Let ((x0, _), e0, e1) ->
+  | Alpha.LetRec ((x0, _), (x1, _) :: xts0, e0, e1) ->
+    LetRec (x0, x1, List.fold_right (fun (x, _) -> fun e -> Fun (x, e)) xts0 (f e0), f e1)
+  | Alpha.LetRec ((x0, _), [], e0, e1) | Alpha.Let ((x0, _), e0, e1) ->
     Let (x0, f e0, f e1)
   | Alpha.Fun ((x0, _), e0) ->
     Fun (x0, f e0)

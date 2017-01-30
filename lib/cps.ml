@@ -25,7 +25,7 @@ open Source
 type var = Alpha.var
 type tpe = Type.t
 type exp =
-  | LetRec of var * var list * var * exp * exp
+  | LetRec of var * var * var * exp * exp
   | Let    of var * term * exp
   | If     of var * exp * exp
   | App    of var * var * cont
@@ -52,9 +52,9 @@ and cont =
 let rec pp_var = Printf.sprintf "_%d"
 let rec pp_tpe = Alpha.pp_tpe
 let rec pp_exp = function
-  | LetRec (x0, xs0, x1, e0, e1) ->
+  | LetRec (x0, x1, x2, e0, e1) ->
     Printf.sprintf "let rec %s %s %s = %s in %s"
-      (pp_var x0) (String.concat " " @@ List.map pp_var xs0) (pp_var x1) (pp_exp e0) (pp_exp e1)
+      (pp_var x0) (pp_var x1) (pp_var x2) (pp_exp e0) (pp_exp e1)
   | Let (x0, v0, e0) ->
     Printf.sprintf "let %s = %s in %s"
       (pp_var x0) (pp_term v0) (pp_exp e0)
@@ -118,18 +118,16 @@ and pp_cont = function
 
 let rec rename_exp env e =
   match e with
-  | LetRec (x0, xs0, x1, e0, e1) ->
+  | LetRec (x0, x1, x2, e0, e1) ->
     let x0' = Fresh.f () in
     let x1' = Fresh.f () in
-    let xs0' = List.map (fun _ -> Fresh.f ()) xs0 in
+    let x2' = Fresh.f () in
     let env0 = Env.extend x0 x0' env in
-    let env1 = Env.extend x1 x1' env in
-    let env2 = List.fold_right begin fun (x, y) -> fun env ->
-        Env.extend x y env
-      end (List.combine xs0 xs0') env1 in
+    let env1 = Env.extend x1 x1' env0 in
+    let env2 = Env.extend x2 x2' env1 in
     let e0' = rename_exp env2 e0 in
     let e1' = rename_exp env0 e1 in
-    LetRec (x0', xs0', x1', e0', e1')
+    LetRec (x0', x1', x2', e0', e1')
   | Let (x0, v0, e0) ->
     let x0' = Fresh.f () in
     let v0' = rename_term env v0 in
@@ -250,10 +248,14 @@ let rec f env e (k: var) =
     gen_let (Bool b0) (gen_ret k)
   | Alpha.Unit ->
     gen_let Unit (gen_ret k)
-  | Alpha.LetRec ((x0, _), xs0, e0, e1) ->
-    let x1 = Fresh.f () in
-    LetRec (x0, List.map fst xs0, x1, f env e0 x1, f env e1 k)
-  | Alpha.Let ((x0, _), e0, e1) ->
+  | Alpha.LetRec ((x0, _), (x1, _) :: xts0, e0, e1) ->
+    let x2 = Fresh.f () in
+    let e0' = f env begin
+        List.fold_right (fun xt -> fun e -> Alpha.Fun (xt, e) @@@ nowhere) xts0 e0
+      end x2 in
+    let e1' = f env e1 k in
+    LetRec (x0, x1, x2, e0', e1')
+  | Alpha.LetRec ((x0, _), [], e0, e1) | Alpha.Let ((x0, _), e0, e1) ->
     g env e0 (fun x1 ->
         f (Env.extend x0 x1 env) e1 k)
   | Alpha.Fun ((x0, _), e0) ->
@@ -321,10 +323,14 @@ and g env e (k: var -> exp) =
     gen_let (Bool b0) k
   | Alpha.Unit ->
     gen_let Unit k
-  | Alpha.LetRec ((x0, _), xs0, e0, e1) ->
-    let x1 = Fresh.f () in
-    LetRec (x0, List.map fst xs0, x1, f env e0 x1, g env e1 k)
-  | Alpha.Let ((x0, _), e0, e1) ->
+  | Alpha.LetRec ((x0, _), (x1, _) :: xts0, e0, e1) ->
+    let x2 = Fresh.f () in
+    let e0' = f env begin
+        List.fold_right (fun xt -> fun e -> Alpha.Fun (xt, e) @@@ nowhere) xts0 e0
+      end x2 in
+    let e1' = g env e1 k in
+    LetRec (x0, x1, x2, e0', e1')
+  | Alpha.LetRec ((x0, _), [], e0, e1) | Alpha.Let ((x0, _), e0, e1) ->
     g env e0 (fun x1 ->
         g (Env.extend x0 x1 env) e1 k)
   | Alpha.Fun ((x0, _), e0) ->

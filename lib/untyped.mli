@@ -27,7 +27,7 @@ type exp =
   | Int    of int
   | Bool   of bool
   | Unit
-  | LetRec of var * var list * exp * exp
+  | LetRec of var * var * exp * exp
   | Let    of var * exp * exp
   | Fun    of var * exp
   | App    of exp * exp
