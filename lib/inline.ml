@@ -23,7 +23,7 @@
 open Source
 open Cps
 
-let threshold_default = 30
+let threshold_default = 15
 let threshold =
   ref threshold_default
 

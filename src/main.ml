@@ -22,6 +22,20 @@
  *)
 exception Quit of int
 
+let parse lexbuf =
+  Parser.main Lexer.token lexbuf
+
+let parse_file filepath =
+  let ichannel = open_in filepath in
+  try parse (Lexing.from_channel ichannel) with
+  | e -> close_in ichannel; raise e
+
+let iter_limit = ref 100
+let iter f =
+  let rec iter' f n =
+    if n <= 0 then f else (fun x -> (iter' f (n - 1)) (f x))
+  in iter' f !iter_limit
+
 module type MODE =
 sig
   include Eval.S
@@ -51,16 +65,14 @@ struct
   type tpe = Alpha.tpe
   type value = CAM.value
 
-  let optimize_level = ref 15
-  let optimize cont =
-    let rec f cont n =
-      if n <= 0 then cont else f (ConstFold.f (Inline.f cont)) (n - 1)
-    in f cont (!optimize_level)
+  let optimize =
+    iter (fun e -> ConstFold.f (Inline.f e))
 
   let run e =
     let e0 = Alpha.f e in
     let t0 = Typing.f e0 in
-    let v0 = CAM.run (CAM.compile (Inv.f (optimize (Cps.f e0)))) in
+    print_endline @@ Untyped.pp_exp (Elim.f (Inv.f (optimize (Cps.f e0))));
+    let v0 = CAM.run (CAM.compile (Elim.f (Inv.f (optimize (Cps.f e0))))) in
     (e0, t0, v0)
 
   let pp_exp = Alpha.pp_exp
@@ -74,30 +86,19 @@ struct
   type tpe = Alpha.tpe
   type value = ZAM.value
 
-  let optimize_level = ref 5
-  let optimize cont =
-    let rec f cont n =
-      if n <= 0 then cont else f (ConstFold.f (Inline.f cont)) (n - 1)
-    in f cont (!optimize_level)
+  let optimize =
+    iter (fun e -> ConstFold.f (Inline.f e))
 
   let run e =
     let e0 = Alpha.f e in
     let t0 = Typing.f e0 in
-    let v0 = ZAM.run (ZAM.compile (Inv.f (optimize (Cps.f e0)))) in
+    let v0 = ZAM.run (ZAM.compile (Elim.f (Inv.f (optimize (Cps.f e0))))) in
     (e0, t0, v0)
 
   let pp_exp = Alpha.pp_exp
   let pp_tpe = Alpha.pp_tpe
   let pp_value = ZAM.pp_value
 end
-
-let parse lexbuf =
-  Parser.main Lexer.token lexbuf
-
-let parse_file filepath =
-  let ichannel = open_in filepath in
-  try parse (Lexing.from_channel ichannel) with
-  | e -> close_in ichannel; raise e
 
 let repl (module M : MODE) () =
   while true do
@@ -120,7 +121,8 @@ let _ =
   Arg.parse
     [("--cam", Arg.Unit (fun () -> mode := (module CAM_mode : MODE)), "compiling for CAM")
     ;("--zam", Arg.Unit (fun () -> mode := (module ZAM_mode : MODE)), "compiling for ZAM")
-    ]
+    ;("--inline", Arg.Int (fun n -> Inline.threshold := n), "maximum size of functions inlined")
+    ;("-n", Arg.Int (fun n -> iter_limit := n), "maximum number of optimizations iterated")]
     (fun path -> filepaths := !filepaths @ path :: [])
     ("chibiml Copyright (c) 2014-2016 Takahisa Watanabe\n" ^
      "  usage: chibiml [<option>] <file0> <file1> ...\n");

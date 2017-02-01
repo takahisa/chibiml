@@ -20,7 +20,4 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *)
-val threshold_default: int
-val threshold: int ref
-
-val f: Cps.cont -> Cps.cont
+val f: Untyped.exp -> Untyped.exp
