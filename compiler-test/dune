@@ -1,0 +1,9 @@
+(executable
+  (name runtest)
+  (libraries chibiml oUnit)
+  (modes native byte)
+  (flags :standard -g -linkall))
+
+(rule
+ (alias  runtest)
+ (action (run ./runtest.exe)))
