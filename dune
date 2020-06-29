@@ -1,0 +1,5 @@
+(executable
+  (name chibiml)
+  (libraries chibiml)
+  (modes native byte)
+  (flags :standard -g -linkall))
