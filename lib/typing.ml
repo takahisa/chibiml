@@ -64,7 +64,7 @@ let subst_tpe_constraint th (t0, t1) =
 
 module S = Set.Make (struct
     type t = var
-    let compare = Pervasives.compare
+    let compare = Stdlib.compare
   end)
 
 let rec fv_tpe t =

@@ -1,0 +1,8 @@
+(library
+  (public_name chibiml)
+  (name chibiml)
+  (modes native byte)
+  (flags :standard -g -linkall -w -27 -w -33 -w -39 -w -32))
+
+(ocamllex lexer)
+(menhir (modules parser))

@@ -1,0 +1,21 @@
+opam-version: "2.0"
+name: "chibiml"
+version: "0.10.0"
+maintainer: "Takahisa Watanabe <takahisa.wt@gmail.com>"
+authors: "Takahisa Watanabe <takahisa.wt@gmail.com>"
+license: "MIT"
+homepage: "http://github.com/takahisa/chibiml"
+dev-repo: "http://github.com/takahisa/chibiml"
+bug-reports: "http://github.com/takahisa/chibiml/issues"
+depends: [
+  "ounit"         { test  & >= "2.0.0"  }
+]
+build:      [
+  [ "dune" "build"   "-p" name "-j" jobs]
+]
+build-test: [
+  [ "dune" "runtest" "-p" name "-j" jobs]
+]
+install: [
+  [ "dune" "install" ]
+]

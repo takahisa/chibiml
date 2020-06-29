@@ -25,7 +25,7 @@ open Untyped
 module S = Set.Make
     (struct
       type t = var
-      let compare = Pervasives.compare
+      let compare = Stdlib.compare
      end)
 
 let rec fv = function
